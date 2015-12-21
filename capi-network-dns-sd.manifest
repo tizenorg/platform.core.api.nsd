@@ -1,0 +1,9 @@
+<manifest>
+	<assign>
+		<filesystem path="/usr/bin/dns-sd--test" exec_label="dns-sd"/>
+	</assign>
+	<request>
+		<domain name="_" />
+	</request>
+</manifest>
+
