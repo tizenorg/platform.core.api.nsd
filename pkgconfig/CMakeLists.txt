@@ -16,3 +16,4 @@
 #
 
 ADD_SUBDIRECTORY(nsd-dns-sd)
+ADD_SUBDIRECTORY(nsd-ssdp)
