@@ -15,11 +15,10 @@
 # @file        CMakeLists.txt
 #
 
-SET(NSD_PATH ${PROJECT_SOURCE_DIR}/src)
+CONFIGURE_FILE(nsd-ssdp.pc.in nsd-ssdp.pc @ONLY)
 
-INCLUDE_DIRECTORIES(
-    ${CMAKE_SOURCE_DIR}/include
+INSTALL(FILES
+    ${CMAKE_BINARY_DIR}/pkgconfig/nsd-ssdp/nsd-ssdp.pc
+    DESTINATION
+    ${LIB_DIR}/pkgconfig
     )
-
-ADD_SUBDIRECTORY(dns-sd)
-ADD_SUBDIRECTORY(ssdp)
