@@ -18,5 +18,6 @@
 
 INSTALL(FILES
     ${CMAKE_SOURCE_DIR}/include/dns-sd.h
+    ${CMAKE_SOURCE_DIR}/include/ssdp.h
     DESTINATION ${INCLUDE_DIR}/nsd
     )

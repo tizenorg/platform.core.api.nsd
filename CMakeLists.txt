@@ -26,7 +26,7 @@ INCLUDE(FindPkgConfig)
 
 ########################## search for packages ################################
 
-SET(COMMON_DEPS "dlog glib-2.0 gio-2.0 capi-base-common gio-unix-2.0")
+SET(COMMON_DEPS "dlog glib-2.0 gio-2.0 capi-base-common gio-unix-2.0 gssdp-1.0")
 SET(PC_DEPS "capi-base-common")
 
 
@@ -94,6 +94,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=${LIBDIR}")
 
 SET(TARGET_NSD "nsd")
 SET(TARGET_LIB_NSD_DNS_SD "nsd-dns-sd")
+SET(TARGET_LIB_NSD_SSDP "nsd-ssdp")
 SET(TARGET_NSD_TESTS "nsd-tests")
 
 
