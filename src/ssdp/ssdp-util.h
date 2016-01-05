@@ -17,6 +17,7 @@
 #ifndef __ssdp_util_h__
 #define __ssdp_util_h__
 
+#define USE_DLOG
 #ifdef USE_DLOG
 #include <dlog.h>
 
