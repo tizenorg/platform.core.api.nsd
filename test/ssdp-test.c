@@ -91,30 +91,14 @@ int test_ssdp_create_service()
 	__FUNC_ENTER__;
 	int rv = 0;
 	char *target = NULL;
-	char *type = NULL;;
 	ssdp_service_h serv_id;
-	ssdp_type_e ssdp_type = SSDP_TYPE_UNKNOWN;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
 	if(scanf("%ms", &target) < 1)
 		return -1;
 
-	printf("\nEnter SSDP type: (r: register, b: browser)");
-	if(scanf("%ms", &type) < 1)
-		return -1;
-	switch (type[0]) {
-	case 'r':
-		ssdp_type = SSDP_TYPE_REGISTER;
-		break;
-	case 'b':
-		ssdp_type = SSDP_TYPE_BROWSE;
-		break;
-	default:
-		printf(MAKE_RED"Invalid type %s"RESET_COLOR"\n", __func__);
-		__FUNC_EXIT__;
-	}
 
-	rv = ssdp_create_service(ssdp_type, target, &serv_id);
+	rv = ssdp_create_local_service(target, &serv_id);
 	g_free(target);
 	printf("service handler %u\n", serv_id);
 
@@ -138,7 +122,7 @@ int test_ssdp_destroy_service()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_destroy_service(serv_id);
+	rv = ssdp_destroy_local_service(serv_id);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
 		__FUNC_EXIT__;
@@ -165,7 +149,7 @@ int test_ssdp_set_usn()
 	if(scanf("%ms", &usn) < 1)
 		return -1;
 
-	rv = ssdp_set_usn(serv_id, usn);
+	rv = ssdp_service_set_usn(serv_id, usn);
 	g_free(usn);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
@@ -193,7 +177,7 @@ int test_ssdp_set_url()
 	if(scanf("%ms", &url) < 1)
 		return -1;
 
-	rv = ssdp_set_url(serv_id, url);
+	rv = ssdp_service_set_url(serv_id, url);
 	g_free(url);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
@@ -217,7 +201,7 @@ int test_ssdp_get_target()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_get_target(serv_id, &target);
+	rv = ssdp_service_get_target(serv_id, &target);
 	if(rv == 0) {
 		printf("target [%s]\n", target);
 		g_free(target);
@@ -242,7 +226,7 @@ int test_ssdp_get_usn()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_get_usn(serv_id, &usn);
+	rv = ssdp_service_get_usn(serv_id, &usn);
 	if(rv == 0) {
 		printf("usn [%s]\n", usn);
 		g_free(usn);
@@ -265,7 +249,7 @@ int test_ssdp_get_url()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_get_url(serv_id, &url);
+	rv = ssdp_service_get_url(serv_id, &url);
 	if(rv == 0) {
 		printf("url [%s]\n", url);
 		g_free(url);
@@ -279,19 +263,25 @@ int test_ssdp_get_url()
 	return -1;
 }
 
-void test_register_cb(ssdp_service_h ssdp_service, ssdp_register_state_e state, void *user_data)
+void test_registered_cb(ssdp_error_e result, ssdp_service_h ssdp_service, void *user_data)
 {
 	__FUNC_ENTER__;
 	printf("service handler: %u\n", ssdp_service);
-	printf("state: %d\n", state);
+	printf("result: %d\n", result);
 	__FUNC_EXIT__;
 }
 
-void test_browse_cb(ssdp_service_h ssdp_service, ssdp_browse_state_e state, void *user_data)
+void test_found_cb(ssdp_service_state_e state, ssdp_service_h ssdp_service, void *user_data)
 {
 	__FUNC_ENTER__;
+	char *usn;
+	char *url;
 	printf("service handler: %u\n", ssdp_service);
-	printf("state: %d\n", state);
+	ssdp_service_get_usn(ssdp_service, &usn);
+	ssdp_service_get_url(ssdp_service, &url);
+	printf("state: %s\n", state==SSDP_SERVICE_STATE_AVAILABLE?"AVAILABLE":"UNAVAILABE");
+	printf("usn: %s\n", usn);
+	printf("url: %s\n", url);
 	__FUNC_EXIT__;
 }
 
@@ -305,7 +295,7 @@ int test_ssdp_register_service()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_register_service(serv_id, &test_register_cb, NULL);
+	rv = ssdp_register_local_service(serv_id, &test_registered_cb, NULL);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
 		__FUNC_EXIT__;
@@ -327,7 +317,7 @@ int test_ssdp_deregister_service()
 	if(scanf("%u", &serv_id) < 1)
 		return -1;
 
-	rv = ssdp_deregister_service(serv_id);
+	rv = ssdp_deregister_local_service(serv_id);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
 		__FUNC_EXIT__;
@@ -343,18 +333,14 @@ int test_ssdp_service_browse()
 {
 	__FUNC_ENTER__;
 	int rv = 0;
-	ssdp_service_h serv_id = 0;
+	ssdp_browser_h browser_id = 0;
 	char *target = NULL;
-
-	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
-		return -1;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
 	if(scanf("%ms", &target) < 1)
 		return -1;
 
-	rv = ssdp_browse_service(serv_id, &test_browse_cb, NULL);
+	rv = ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL);
 	g_free(target);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
@@ -371,13 +357,13 @@ int test_ssdp_service_stop_browse()
 {
 	__FUNC_ENTER__;
 	int rv = 0;
-	ssdp_service_h serv_id = 0;
+	ssdp_browser_h browser_id = 0;
 
-	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	printf("\nEnter browser id: ");
+	if(scanf("%u", &browser_id) < 1)
 		return -1;
 
-	rv = ssdp_stop_browse_service(serv_id);
+	rv = ssdp_stop_browsing_service(browser_id);
 	if(rv == 0) {
 		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
 		__FUNC_EXIT__;
