@@ -38,7 +38,7 @@ extern "C" {
  */
 
 /**
- * @brief Enumeration for Network Service Discovery error code.
+ * @brief Enumeration for Network Service Discovery SSDP error code.
  * @since_tizen 3.0
  */
 typedef enum
@@ -60,28 +60,6 @@ typedef enum
 } ssdp_error_e;
 
 /**
- * @brief Enumeration for Network Service Discovery SSDP service type.
- * @since_tizen 3.0
- */
-typedef enum
-{
-	SSDP_TYPE_UNKNOWN,		/** Unknown service type */
-	SSDP_TYPE_REGISTER,		/** Register service type */
-	SSDP_TYPE_BROWSE,		/** Browse service type */
-} ssdp_type_e;
-
-
-/**
- * @brief Enumeration for Network Service Discovery SSDP service register state.
- * @since_tizen 3.0
- */
-typedef enum
-{
-	SSDP_REGISTERED,		/** Register success */
-	SSDP_REGISTER_FAILURE,	/** Register failure */
-} ssdp_register_state_e;
-
-/**
  * @brief Enumeration for Network Service Discovery SSDP service browse state.
  * @since_tizen 3.0
  */
@@ -92,174 +70,256 @@ typedef enum
 } ssdp_browse_state_e;
 
 /**
- * @brief The SSDP service handle
+ * @brief The SSDP local service handle
  * @since_tizen 3.0
  */
-typedef unsigned int ssdp_service_h;
+typedef unsigned int ssdp_local_service_h;
 
 /**
- * @brief Called when the registry of SSDP service is finished.
+ * @brief The SSDP remote service handle
  * @since_tizen 3.0
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] state The SSDP service register state
+ */
+typedef unsigned int ssdp_remote_service_h;
+
+/**
+ * @brief The SSDP browser handle
+ * @since_tizen 3.0
+ */
+typedef unsigned int ssdp_browser_h;
+
+/**
+ * @brief Called when the registration of SSDP service is finished.
+ * @since_tizen 3.0
+ * @param[in] result The result of registration
+ * @param[in] ssdp_service The SSDP local service handle
  * @param[in] user_data The user data passed from the request function
  * @see ssdp_register_service()
  */
-typedef void (*ssdp_register_cb) (ssdp_service_h ssdp_service,
-		ssdp_register_state_e state, void *user_data);
+typedef void (*ssdp_registered_cb) (ssdp_error_e result, 
+						ssdp_local_service_h ssdp_service, void *user_data);
 
 /**
  * @brief Called when the browsing of SSDP service is finished.
  * @since_tizen 3.0
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] state The SSDP service browse state
+ * @param[in] ssdp_service The SSDP remote service handle
+ * @param[in] state The state of found service
  * @param[in] user_data The user data passed from the request function
  * @see ssdp_browse_service()
  */
-typedef void (*ssdp_browse_cb) (ssdp_service_h ssdp_service,
-		ssdp_browse_state_e state, void *user_data);
+typedef void (*ssdp_found_cb) (ssdp_remote_service_h ssdp_service,
+								ssdp_browse_state_e state, void *user_data);
 
 /**
  * @brief Initializes SSDP.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
- * @retval #SSDP_ERROR_ALREADY_INITIALIZED Already initialized
  * @retval #SSDP_ERROR_OPERATION_FAILED Operation failed
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
 int ssdp_initialize();
 
 /**
- * @brief Deinitializes SSDP
+ * @brief Deinitializes SSDP.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
- * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
 int ssdp_deinitialize();
 
 /**
- * @brief Creates a SSDP service handle.
+ * @brief Creates a SSDP local service handle.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @remarks You must release @a ssdp_service using ssdp_destroy_service().
- * @param[in] op_type The SSDP service type
- * @param[in] target The SSDP service's target
- * @param[out] ssdp_service The SSDP handle
+ * @param[in] target The SSDP local service's target
+ * @param[out] ssdp_service The SSDP local service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #SSDP_ERROR_OUT_OF_MEMORY Out of memory
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  * @see ssdp_destroy_service()
  * @pre This API needs ssdp_initialize() before use
  */
-int ssdp_create_service(ssdp_type_e op_type, const char *target,
-				ssdp_service_h *ssdp_service);
+int ssdp_create_service(const char *target,	ssdp_local_service_h *ssdp_service);
 
 /**
- * @brief Destroys the SSDP service handle.
+ * @brief Destroys the SSDP local service handle.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_service The SSDP local service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  * @see ssdp_create_service()
  */
-int ssdp_destroy_service(ssdp_service_h ssdp_service);
+int ssdp_destroy_service(ssdp_local_service_h ssdp_service);
 
 /**
- * @brief Sets the USN (Unique Service Name) of SSDP service.
+ * @brief Sets the USN (Unique Service Name) of SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] usn The USN of SSDP service
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[in] usn The USN of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_set_usn(ssdp_service_h ssdp_service, const char *usn);
+int ssdp_local_service_set_usn(ssdp_local_service_h ssdp_service, const char *usn);
 
 /**
- * @brief Sets the URL (Uniform Resource Locator) of SSDP service.
+ * @brief Sets the URL (Uniform Resource Locator) of SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] url The URL of SSDP service
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[in] url The URL of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_set_url(ssdp_service_h ssdp_service, const char *url);
+int ssdp_local_service_set_url(ssdp_local_service_h ssdp_service, const char *url);
 
 /**
- * @brief Gets the target of SSDP service.
+ * @brief Gets the target of SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[out] target The target of SSDP service
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a target using free().
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[out] target The target of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_get_target(ssdp_service_h ssdp_service, char **target);
+int ssdp_local_service_get_target(ssdp_local_service_h ssdp_service, char **target);
 
 /**
- * @brief Gets the USN of SSDP service.
+ * @brief Gets the USN of SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[out] usn The USN of SSDP service
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a usn using free().
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[out] usn The USN of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_get_usn(ssdp_service_h ssdp_service, char **usn);
+int ssdp_local_service_get_usn(ssdp_local_service_h ssdp_service, char **usn);
 
 /**
- * @brief Gets the URL of SSDP service.
+ * @brief Gets the URL of SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[out] url The URL of SSDP service
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a url using free().
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[out] url The URL of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_get_url(ssdp_service_h ssdp_service, char **url);
+int ssdp_local_service_get_url(ssdp_local_service_h ssdp_service, char **url);
 
 /**
- * @brief Registers the SSDP service for publishing.
+ * @brief Gets the target of SSDP remote service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] register_cb The callback function to be called
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a target using free().
+ * @param[in] ssdp_service The SSDP remote service handle
+ * @param[out] target The target of SSDP remote service
+ * @return 0 on success, otherwise negative error value
+ * @retval #SSDP_ERROR_NONE Successful
+ * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
+ * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
+ * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
+ */
+int ssdp_remote_service_get_target(ssdp_remote_service_h ssdp_service, char **target);
+
+/**
+ * @brief Gets the USN of SSDP remote service.
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a usn using free().
+ * @param[in] ssdp_service The SSDP remote service handle
+ * @param[out] usn The USN of SSDP remote service
+ * @return 0 on success, otherwise negative error value
+ * @retval #SSDP_ERROR_NONE Successful
+ * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
+ * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
+ * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
+ */
+int ssdp_remote_service_get_usn(ssdp_remote_service_h ssdp_service, char **usn);
+
+/**
+ * @brief Gets the URL of SSDP remote service.
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege http://tizen.org/privilege/nsd 
+ * @details You must release @a url using free().
+ * @param[in] ssdp_service The SSDP remote service handle
+ * @param[out] url The URL of SSDP remote service
+ * @return 0 on success, otherwise negative error value
+ * @retval #SSDP_ERROR_NONE Successful
+ * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
+ * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
+ * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
+ */
+int ssdp_remote_service_get_url(ssdp_remote_service_h ssdp_service, char **url);
+
+/**
+ * @brief Registers the SSDP local service for publishing.
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_service The SSDP local service handle
+ * @param[in] registered_cb The callback function to be called
  * @param[in] user_data The user data passed to the callback function
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
@@ -267,31 +327,36 @@ int ssdp_get_url(ssdp_service_h ssdp_service, char **url);
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #SSDP_ERROR_OPERATION_FAILED Operation failed
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_register_service(ssdp_service_h ssdp_service,
-			ssdp_register_cb register_cb, void *user_data);
+int ssdp_register_service(ssdp_local_service_h ssdp_service,
+			ssdp_registered_cb registered_cb, void *user_data);
 
 /**
- * @brief Deregisters the SSDP service.
+ * @brief Deregisters the SSDP local service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_service The SSDP local service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_deregister_service(ssdp_service_h ssdp_service);
+int ssdp_deregister_service(ssdp_local_service_h ssdp_service);
 
 /**
- * @brief Browses the SSDP service.
+ * @brief Starts browsing the SSDP remote service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
- * @param[in] browse_cb The callback function to be called
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] target The target to browse
+ * @param[out] ssdp_browser The SSDP browser handle
+ * @param[in] found_cb The callback function to be called
  * @param[in] user_data The user data passed to the callback function
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
@@ -299,22 +364,27 @@ int ssdp_deregister_service(ssdp_service_h ssdp_service);
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #SSDP_ERROR_OPERATION_FAILED Operation failed
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_browse_service(ssdp_service_h ssdp_service,
-			ssdp_browse_cb browse_cb, void *user_data);
+int ssdp_start_browsing_service(const char* target, ssdp_browser_h* ssdp_browser,
+							ssdp_found_cb found_cb, void *user_data);
+
 /**
- * @brief Stops browsing the SSDP service.
+ * @brief Stops browsing the SSDP remote service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
- * @param[in] ssdp_service The SSDP service handle
+ * @privilege http://tizen.org/privilege/nsd 
+ * @param[in] ssdp_browser The SSDP browser handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
  * @retval #SSDP_ERROR_SERVICE_NOT_FOUND Service not found
  * @retval #SSDP_ERROR_INVALID_PARAMETER Invalid parameter
+ * @retval #SSDP_ERROR_NOT_SUPPORTED Not supported
+ * @retval #SSDP_ERROR_PERMISSION_DENIED Permission Denied
  */
-int ssdp_stop_browse_service(ssdp_service_h ssdp_service);
+int ssdp_stop_browsing_service(ssdp_browser_h ssdp_browser);
 
 /**
  * @}
