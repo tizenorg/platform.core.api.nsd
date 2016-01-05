@@ -20,11 +20,17 @@
 #define __FUNC_ENTER__ printf("\n%s() entering...\n", __func__)
 #define __FUNC_EXIT__ printf("\n%s() leaving...\n", __func__)
 
-void test_browse_cb(ssdp_service_h ssdp_service, ssdp_browse_state_e state, void *user_data)
+void test_found_cb(ssdp_service_state_e state, ssdp_service_h ssdp_service, void *user_data)
 {
 	__FUNC_ENTER__;
-	printf("service handler: %s\n", ssdp_service);
-	printf("state: %d\n", state);
+	char *usn;
+	char *url;
+	printf("service handler: %u\n", ssdp_service);
+	ssdp_service_get_usn(ssdp_service, &usn);
+	ssdp_service_get_url(ssdp_service, &url);
+	printf("state: %s\n", state==SSDP_SERVICE_STATE_AVAILABLE?"AVAILABLE":"UNAVAILABE");
+	printf("usn: %s\n", usn);
+	printf("url: %s\n", url);
 	__FUNC_EXIT__;
 }
 
@@ -32,7 +38,7 @@ int main(int argc, char *argv[])
 {
 	GMainLoop *main_loop = NULL;
 	int ret = -1;
-	ssdp_service_h serv_id;
+	ssdp_browser_h browser_id;
 	char *target = "upnp:rootdevice";
 
 	/* Initialize required subsystems */
@@ -43,10 +49,7 @@ int main(int argc, char *argv[])
 	if (ssdp_initialize() == 0) {
 		printf(MAKE_GREEN"Initialized"RESET_COLOR"\n");
 	}
-	if (ssdp_create_service(SSDP_TYPE_BROWSE, target, &serv_id) == 0) {
-		printf(MAKE_GREEN"Create service. Type: %s "RESET_COLOR"\n", target);
-	}
-	if (ssdp_browse_service(serv_id, &test_browse_cb, NULL) == 0) {
+	if (ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL) == 0) {
 		printf(MAKE_GREEN"Start browsing"RESET_COLOR"\n");
 	}
 
