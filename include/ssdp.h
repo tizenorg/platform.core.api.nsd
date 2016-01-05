@@ -123,7 +123,7 @@ typedef void (*ssdp_browse_cb) (ssdp_service_h ssdp_service,
  * @brief Initializes SSDP.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_ALREADY_INITIALIZED Already initialized
@@ -135,7 +135,7 @@ int ssdp_initialize();
  * @brief Deinitializes SSDP
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
@@ -146,7 +146,7 @@ int ssdp_deinitialize();
  * @brief Creates a SSDP service handle.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @remarks You must release @a ssdp_service using ssdp_destroy_service().
  * @param[in] op_type The SSDP service type
  * @param[in] target The SSDP service's target
@@ -166,7 +166,7 @@ int ssdp_create_service(ssdp_type_e op_type, const char *target,
  * @brief Destroys the SSDP service handle.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
@@ -182,7 +182,7 @@ int ssdp_destroy_service(ssdp_service_h ssdp_service);
  * @brief Sets the USN (Unique Service Name) of SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[in] usn The USN of SSDP service
  * @return 0 on success, otherwise negative error value
@@ -197,7 +197,7 @@ int ssdp_set_usn(ssdp_service_h ssdp_service, const char *usn);
  * @brief Sets the URL (Uniform Resource Locator) of SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[in] url The URL of SSDP service
  * @return 0 on success, otherwise negative error value
@@ -212,7 +212,7 @@ int ssdp_set_url(ssdp_service_h ssdp_service, const char *url);
  * @brief Gets the target of SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[out] target The target of SSDP service
  * @return 0 on success, otherwise negative error value
@@ -227,7 +227,7 @@ int ssdp_get_target(ssdp_service_h ssdp_service, char **target);
  * @brief Gets the USN of SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[out] usn The USN of SSDP service
  * @return 0 on success, otherwise negative error value
@@ -242,7 +242,7 @@ int ssdp_get_usn(ssdp_service_h ssdp_service, char **usn);
  * @brief Gets the URL of SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[out] url The URL of SSDP service
  * @return 0 on success, otherwise negative error value
@@ -257,7 +257,7 @@ int ssdp_get_url(ssdp_service_h ssdp_service, char **url);
  * @brief Registers the SSDP service for publishing.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[in] register_cb The callback function to be called
  * @param[in] user_data The user data passed to the callback function
@@ -275,7 +275,7 @@ int ssdp_register_service(ssdp_service_h ssdp_service,
  * @brief Deregisters the SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
@@ -289,7 +289,7 @@ int ssdp_deregister_service(ssdp_service_h ssdp_service);
  * @brief Browses the SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @param[in] browse_cb The callback function to be called
  * @param[in] user_data The user data passed to the callback function
@@ -306,7 +306,7 @@ int ssdp_browse_service(ssdp_service_h ssdp_service,
  * @brief Stops browsing the SSDP service.
  * @since_tizen 3.0
  * @privlevel public
- * @previlege http://tizen.org/privilege/nsd 
+ * @privilege http://tizen.org/privilege/nsd 
  * @param[in] ssdp_service The SSDP service handle
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
