@@ -43,29 +43,36 @@
  *****************************************************************************/
 
 typedef enum {
-	SSDP_SERVICE_STATE_UNKNOWN,
+	SSDP_SERVICE_STATE_NOT_REGISTERED,
 	SSDP_SERVICE_STATE_REGISTERED,
 	SSDP_SERVICE_STATE_BROWSED,
 	SSDP_SERVICE_STATE_FOUND,
-} ssdp_service_state_e;
+} ssdp_state_e;
 
 typedef struct {
-	unsigned int service_id;
+	unsigned int browser_id;		/* for found services */
 	unsigned int service_handler;
 	char *target;
 	char *usn;
 	char *url;
 
-	ssdp_service_state_e origin;
-	ssdp_type_e op_type;
+	ssdp_state_e origin;
 
 	unsigned int resource_id;
 	GSSDPResourceGroup *resource_group;
 	GSSDPResourceBrowser *resource_browser;
 
-	ssdp_register_cb register_cb;
-	ssdp_browse_cb browse_cb;
+	ssdp_registered_cb registered_cb;
+	ssdp_found_cb found_cb;
+
+	void *cb_user_data;
 } ssdp_service_s;
+
+typedef struct {
+	    ssdp_service_s *service;
+		unsigned int service_id;
+} foreach_hash_user_data_s;
+
 
 /*****************************************************************************
  * 	Global Variables
@@ -73,15 +80,16 @@ typedef struct {
 static __thread gboolean g_is_gssdp_init;
 static __thread GSSDPClient *g_gssdp_client = NULL;
 
-static __thread GList *g_ssdp_services;
-/** moon: Need?
+static __thread GList *g_ssdp_local_services;
 static __thread GHashTable *g_found_ssdp_services = NULL;
-*/
+//static __thread GList *g_ssdp_browsers; TODO
 /*****************************************************************************
  * 	Local Functions Definition
  *****************************************************************************/
 
-
+/**
+ * free a local service
+ */
 static void __g_list_free_service(gpointer data, gpointer user_data)
 {
 	ssdp_service_s *service = NULL;
@@ -90,6 +98,39 @@ static void __g_list_free_service(gpointer data, gpointer user_data)
 	if(service == NULL)
 		return;
 	/* moon
+	   if(service->resource_group != NULL && service->resource_id != 0)
+	   gssdp_resource_group_remove_resource(service->resource_group, service->resource_id);
+
+	   if(service->resource_browser != NULL)
+	   g_object_unref (service->resource_browser);
+	 */
+	if(service->origin == SSDP_SERVICE_STATE_NOT_REGISTERED)
+		SSDP_LOGE("Free not registered service");
+	else if(service->origin == SSDP_SERVICE_STATE_REGISTERED)
+		SSDP_LOGE("Free registered service");
+	else if (service->origin == SSDP_SERVICE_STATE_BROWSED)
+		SSDP_LOGE("Free browsed service");
+	else
+		SSDP_LOGE("Free found service");
+
+	g_free(service->target);
+	g_free(service->usn);
+	g_free(service->url);
+	g_free(service);
+}
+
+/**
+ * free a remote service
+ */
+static void __g_hash_free_service(gpointer key, gpointer value, 
+							gpointer user_data)
+{
+	ssdp_service_s *service = NULL;
+
+	service = (ssdp_service_s *)value;
+	if(service == NULL)
+		return;
+	/*
 	   if(service->resource_group != NULL && service->resource_id != 0)
 	   gssdp_resource_group_remove_resource(service->resource_group, service->resource_id);
 
@@ -109,7 +150,32 @@ static void __g_list_free_service(gpointer data, gpointer user_data)
 	g_free(service);
 }
 
-static ssdp_service_s *__ssdp_find_service(GList *services, unsigned int handler)
+/**
+ * remove remove services found by request of a browser (browser_id is passed to by user_data)
+ */
+static void __g_hash_remove_related_services(gpointer key, gpointer value,
+							gpointer user_data)
+{
+	ssdp_service_s *service = NULL;
+	int browse_id = *((unsigned int *)user_data);
+
+	service = (ssdp_service_s *)value;
+	if(service == NULL)
+		return;
+
+	if(service->browser_id != browse_id)
+		return;
+
+	SSDP_LOGD("Free found service");
+
+	g_free(service->target);
+	g_free(service->usn);
+	g_free(service->url);
+	g_free(service);
+}
+
+static ssdp_service_s *__ssdp_find_local_service(GList *services, 
+											unsigned int handler)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	ssdp_service_s *service = NULL;
@@ -128,27 +194,53 @@ static ssdp_service_s *__ssdp_find_service(GList *services, unsigned int handler
 	return service;
 }
 
+static void __g_hash_find_remote_service(gpointer key, gpointer value, 
+											gpointer user_data)
+{
+	ssdp_service_s *service = NULL;
+	foreach_hash_user_data_s *data = NULL;
+
+	service = (ssdp_service_s *)value;
+	data = (foreach_hash_user_data_s *)user_data;
+	if(service == NULL || data == NULL)
+		return;
+
+	if (service->origin != SSDP_SERVICE_STATE_FOUND)
+		return;
+
+	if(service->service_handler == data->service_id)
+		data->service = service;
+
+	return;
+}
+
+static ssdp_service_s *__ssdp_find_remote_service(GHashTable *services, 
+													unsigned int handler)
+{
+	foreach_hash_user_data_s user_data;
+
+	user_data.service_id = handler;
+	user_data.service = NULL;
+	g_hash_table_foreach(g_found_ssdp_services,
+			(GHFunc)__g_hash_find_remote_service, &user_data);
+
+	return user_data.service;
+}
+
 static void
 __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
-		const char *usn, GList *urls, gpointer user_data)
+				const char *usn, GList *urls, gpointer user_data)
 {
 	__SSDP_LOG_FUNC_ENTER__;
-	ssdp_service_h handler;
-	ssdp_service_s *browsed_service = NULL;
+	ssdp_service_s *browser = NULL;
+	ssdp_service_s *found_service = NULL;
 	char *temp_url = NULL;
 	char *ptr = NULL;
 	int url_len = 0;
 	GList *l;
 
-	handler = (ssdp_service_h)user_data;
-	if (handler == 0) {
-		SSDP_LOGE("Invalid parameters");
-		__SSDP_LOG_FUNC_EXIT__;
-		return;
-	}
-
-	browsed_service = __ssdp_find_service(g_ssdp_services, handler);
-	if (browsed_service == NULL) {
+	browser = (ssdp_service_s *)user_data;
+	if (browser == NULL) {
 		SSDP_LOGE("Service not found");
 		return;
 	}
@@ -171,7 +263,6 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 		ptr+=strlen((char *)l->data);
 	}
 
-	/** moon: Need?
 	found_service = g_hash_table_lookup(g_found_ssdp_services, usn);
 	if (found_service != NULL &&
 			g_strcmp0(found_service->usn, usn) == 0) {
@@ -186,30 +277,24 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 		__SSDP_LOG_FUNC_EXIT__;
 		return;
 	}
-	*/
 
 	SSDP_LOGD("resource available\nUSN: %s", usn);
 
-	/** moon: Need?
 	found_service->usn = g_strdup(usn);
-	found_service->location = temp_loc;
+	found_service->url= temp_url;
 	found_service->service_handler = (unsigned int)found_service & 0xffffffff;
-	found_service->service_id = browsed_service->service_handler;
+	found_service->browser_id = browser->service_handler;
 	found_service->origin = SSDP_SERVICE_STATE_FOUND;
 
 	SSDP_LOGD("added service [%u]", found_service->service_handler);
-	g_hash_table_insert(g_found_ssdp_services, found_service->usn, found_service);
-	if (service_found_cb != NULL)
-		service_found_cb(SSDP_SERIVCE_AVAILABLE, found_service->usn,
-				found_service->location, service_found_data);
+	g_hash_table_insert(g_found_ssdp_services, 
+			found_service->usn, found_service);
 
 	SSDP_LOGD("Hash tbl size [%d]", g_hash_table_size(g_found_ssdp_services));
-	*/
 
-	if (browsed_service->browse_cb) {
-		/** moon: TODO: user_data? */
-		browsed_service->browse_cb(handler, SSDP_SERVICE_AVAILABLE,
-					NULL);
+	if (browser->found_cb) {
+		browser->found_cb(found_service->service_handler,
+				SSDP_SERVICE_STATE_AVAILABLE, browser->cb_user_data);
 	}
 
 	__SSDP_LOG_FUNC_EXIT__;
@@ -222,24 +307,15 @@ __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 		const char *usn, GList *urls, gpointer user_data)
 {
 	__SSDP_LOG_FUNC_ENTER__;
-	ssdp_service_h handler;
-	ssdp_service_s *service = NULL;
+	ssdp_service_s *browser = NULL;
+	ssdp_service_s *found_service = NULL;
 
-	handler = (ssdp_service_h)user_data;
-	if (handler == 0) {
-		SSDP_LOGE("Invalid parameters");
-		__SSDP_LOG_FUNC_EXIT__;
-		return;
-	}
-
-	service = __ssdp_find_service(g_ssdp_services, handler);
-	if (service == NULL) {
+	browser = (ssdp_service_s *)user_data;
+	if (browser == NULL) {
 		SSDP_LOGE("Service not found");
 		return;
 	}
 
-
-	/** moon: Need?
 	found_service = g_hash_table_lookup(g_found_ssdp_services, usn);
 	if (found_service == NULL) {
 		SSDP_LOGD("No service matched!");
@@ -247,93 +323,23 @@ __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 	}
 
 	SSDP_LOGD("resource unavailable\n  USN: %s\n", usn);
-	if (service_found_cb != NULL)
-		service_found_cb(SSDP_SERIVCE_UNAVAILABLE, found_service->usn,
-				found_service->location, user_data);
 
 	g_hash_table_remove(g_found_ssdp_services, usn);
 	g_free(found_service->target);
 	g_free(found_service->usn);
-	g_free(found_service->location);
+	g_free(found_service->url);
 	g_free(found_service);
 
 	SSDP_LOGD("Hash tbl size [%d]", g_hash_table_size(g_found_ssdp_services));
-	*/
 
-	if (service->browse_cb) {
-		/** moon: TODO: user_data? */
-		service->browse_cb(handler, SSDP_SERVICE_UNAVAILABLE,
-					NULL);
+	if (browser->found_cb) {
+		browser->found_cb(found_service->service_handler,
+				SSDP_SERVICE_STATE_UNAVAILABLE, browser->cb_user_data);
 	}
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return;
 }
-
-static int __ssdp_rescan(ssdp_service_s *service)
-{
-	__SSDP_LOG_FUNC_ENTER__;
-	int status = SSDP_ERROR_NONE;
-	if (!(gssdp_resource_browser_rescan(service->resource_browser)))
-	{
-		SSDP_LOGE("Failed to request rescan");
-		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OPERATION_FAILED;
-	}
-	__SSDP_LOG_FUNC_EXIT__;
-	return status;
-}
-
-/*
-static const char* __print_error(int error)
-{
-	switch (error)
-	{
-	case SSDP_ERROR_NOT_PERMITTED:
-		return "SSDP_ERROR_NOT_PERMITTED";
-		break;
-	case SSDP_ERROR_OUT_OF_MEMORY:
-		return "SSDP_ERROR_OUT_OF_MEMORY";
-		break;
-	case SSDP_ERROR_PERMISSION_DENIED:
-		return "SSDP_ERROR_PERMISSION_DENIED";
-		break;
-	case SSDP_ERROR_RESOURCE_BUSY:
-		return "SSDP_ERROR_RESOURCE_BUSY";
-		break;
-	case SSDP_ERROR_INVALID_PARAMETER:
-		return "SSDP_ERROR_INVALID_PARAMETER";
-		break;
-	case SSDP_ERROR_CONNECTION_TIME_OUT:
-		return "SSDP_ERROR_CONNECTION_TIME_OUT";
-		break;
-	case SSDP_ERROR_NOT_SUPPORTED:
-		return "SSDP_ERROR_NOT_SUPPORTED";
-		break;
-	case SSDP_ERROR_NOT_INITIALIZED:
-		return "SSDP_ERROR_NOT_INITIALIZED";
-		break;
-	case SSDP_ERROR_ALREADY_INITIALIZED:
-		return "SSDP_ERROR_ALREADY_INITIALIZED";
-		break;
-	case SSDP_ERROR_OPERATION_FAILED:
-		return "SSDP_ERROR_OPERATION_FAILED";
-		break;
-	case SSDP_ERROR_SERVICE_NOT_FOUND:
-		return "SSDP_ERROR_SERVICE_NOT_FOUND";
-		break;
-	case SSDP_ERROR_SERVICE_DUPLICATED:
-		return "SSDP_ERROR_SERVICE_DUPLICATED";
-		break;
-	case SSDP_ERROR_SSDP_SERVICE_FAILURE:
-		return "SSDP_ERROR_SSDP_SERVICE_FAILURE";
-		break;
-	default:
-		break;
-	}
-	return "Unknown error";
-}
-*/
 
 int ssdp_initialize()
 {
@@ -346,7 +352,7 @@ int ssdp_initialize()
 
 	if (g_is_gssdp_init) {
 		SSDP_LOGE("gssdp already initialized");
-		return SSDP_ERROR_ALREADY_INITIALIZED;
+		return SSDP_ERROR_NONE;
 	}
 
 	g_gssdp_client = gssdp_client_new (NULL, NULL, &gerror);
@@ -364,9 +370,7 @@ int ssdp_initialize()
 		return SSDP_ERROR_OPERATION_FAILED;
 	}
 
-	/** moon: Need?
 	g_found_ssdp_services = g_hash_table_new(g_str_hash, g_str_equal);
-	*/
 
 	g_is_gssdp_init = TRUE;
 
@@ -386,16 +390,13 @@ int ssdp_deinitialize()
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	g_list_foreach(g_ssdp_services, (GFunc)__g_list_free_service, NULL);
-	g_list_free(g_ssdp_services);
-	g_ssdp_services = NULL;
+	g_list_foreach(g_ssdp_local_services, (GFunc)__g_list_free_service, NULL);
+	g_list_free(g_ssdp_local_services);
+	g_ssdp_local_services = NULL;
 
-
-	/** moon: Need?
 	g_hash_table_foreach(g_found_ssdp_services,
 			(GHFunc)__g_hash_free_service, NULL);
 	g_hash_table_remove_all(g_found_ssdp_services);
-	*/
 
 	g_object_unref(g_gssdp_client);
 	g_gssdp_client = NULL;
@@ -405,7 +406,7 @@ int ssdp_deinitialize()
 	return status;
 }
 
-int ssdp_create_service(ssdp_type_e op_type, const char *target, ssdp_service_h *ssdp_service)
+int ssdp_create_local_service(const char *target, ssdp_service_h *ssdp_service)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -416,13 +417,6 @@ int ssdp_create_service(ssdp_type_e op_type, const char *target, ssdp_service_h 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
 		return SSDP_ERROR_NOT_INITIALIZED;
-	}
-
-	if (op_type != SSDP_TYPE_UNKNOWN && 
-		op_type != SSDP_TYPE_REGISTER && 
-		op_type != SSDP_TYPE_BROWSE) {
-		SSDP_LOGE("Invalid SSDP type");
-		return SSDP_ERROR_INVALID_PARAMETER;
 	}
 
 	if (ssdp_service == NULL) {
@@ -449,15 +443,14 @@ int ssdp_create_service(ssdp_type_e op_type, const char *target, ssdp_service_h 
 	*ssdp_service = (unsigned int)service & 0xFFFFFFFF;
 	SSDP_LOGD("Create handler for service [%u]", *ssdp_service);
 	service->service_handler = *ssdp_service;
-	service->origin = SSDP_SERVICE_STATE_UNKNOWN;	// moon: origin
-	service->op_type = op_type;
-	g_ssdp_services = g_list_append(g_ssdp_services, service);
+	service->origin = SSDP_SERVICE_STATE_NOT_REGISTERED;
+	g_ssdp_local_services = g_list_append(g_ssdp_local_services, service);
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
 }
 
-int ssdp_destroy_service(ssdp_service_h ssdp_service)
+int ssdp_destroy_local_service(ssdp_service_h ssdp_service)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -477,37 +470,17 @@ int ssdp_destroy_service(ssdp_service_h ssdp_service)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	// moon: add
-	switch (service->op_type) {
-	case SSDP_TYPE_REGISTER:
-		ssdp_deregister_service(ssdp_service);
-		break;
-	case SSDP_TYPE_BROWSE:
-		ssdp_stop_browse_service(ssdp_service);
-		break;
-	default:
-		SSDP_LOGE("Invalid operation type");
-		return SSDP_ERROR_NOT_SUPPORTED;
-	}
-
-
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
 	if (service == NULL)
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
 
-	/** moon: delete
-	if (service->resource_group != NULL) {
-		gssdp_resource_group_remove_resource(service->resource_group,
-				service->resource_id);
-	}
+	if (service->resource_group != NULL)
+		service->resource_group = NULL;
 
-	// moon: check
-	if (service->resource_browser != NULL) {
+	if (service->resource_browser != NULL)
 		g_object_unref(service->resource_browser);
-	}
-	*/
 
-	g_ssdp_services = g_list_remove(g_ssdp_services, service);
+	g_ssdp_local_services = g_list_remove(g_ssdp_local_services, service);
 	g_free(service->target);
 	g_free(service->usn);
 	g_free(service->url);
@@ -517,7 +490,7 @@ int ssdp_destroy_service(ssdp_service_h ssdp_service)
 	return status;
 }
 
-int ssdp_set_usn(ssdp_service_h ssdp_service, const char* usn)
+int ssdp_service_set_usn(ssdp_service_h local_service, const char* usn)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -525,11 +498,11 @@ int ssdp_set_usn(ssdp_service_h ssdp_service, const char* usn)
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
-	if (ssdp_service == 0 || usn == NULL) {
+	if (local_service == 0 || usn == NULL) {
 		SSDP_LOGE("Invalid parameter");
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
-	SSDP_LOGD("SSDP service ID [%u]", ssdp_service);
+	SSDP_LOGD("SSDP service ID [%u]", local_service);
 	SSDP_LOGD("USN [%s]", usn);
 
 	if (!g_is_gssdp_init) {
@@ -537,27 +510,21 @@ int ssdp_set_usn(ssdp_service_h ssdp_service, const char* usn)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
 	if (service == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	if (service->op_type != SSDP_TYPE_REGISTER) {
-		SSDP_LOGE("Invalid operation type");
-		return SSDP_ERROR_INVALID_PARAMETER;
-	}
-
 	g_free(service->usn);
 	service->usn = g_strndup(usn, strlen(usn));
 
-	// moon: TODO : renew the advertising service if device already announced
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
 }
 
-int ssdp_set_url(ssdp_service_h ssdp_service, const char *url)
+int ssdp_service_set_url(ssdp_service_h local_service, const char *url)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -565,11 +532,11 @@ int ssdp_set_url(ssdp_service_h ssdp_service, const char *url)
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
-	if (ssdp_service == 0 || url == NULL) {
+	if (local_service == 0 || url == NULL) {
 		SSDP_LOGE("Invalid parameter");
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
-	SSDP_LOGD("SSDP service ID [%u]", ssdp_service);
+	SSDP_LOGD("SSDP service ID [%u]", local_service);
 	SSDP_LOGD("Location [%s]", url);
 
 	if (!g_is_gssdp_init) {
@@ -577,26 +544,20 @@ int ssdp_set_url(ssdp_service_h ssdp_service, const char *url)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
 	if (service == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	if (service->op_type != SSDP_TYPE_REGISTER) {
-		SSDP_LOGE("Invalid operation type");
-		return SSDP_ERROR_INVALID_PARAMETER;
-	}
-
 	g_free(service->url);
 	service->url = g_strndup(url, strlen(url));
-	// moon: TODO : renew the advertising service if device already announced
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
 }
 
-int ssdp_get_target(ssdp_service_h ssdp_service, char **target)
+int ssdp_service_get_target(ssdp_service_h ssdp_service, char **target)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -615,7 +576,11 @@ int ssdp_get_target(ssdp_service_h ssdp_service, char **target)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
+	if (service == NULL)
+		service = __ssdp_find_remote_service(g_found_ssdp_services, 
+												ssdp_service);
+
 	if (service == NULL || service->target == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
@@ -627,7 +592,7 @@ int ssdp_get_target(ssdp_service_h ssdp_service, char **target)
 	return status;
 }
 
-int ssdp_get_usn(ssdp_service_h ssdp_service, char **usn)
+int ssdp_service_get_usn(ssdp_service_h ssdp_service, char **usn)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -646,7 +611,10 @@ int ssdp_get_usn(ssdp_service_h ssdp_service, char **usn)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
+	if (service == NULL)
+		service = __ssdp_find_remote_service(g_found_ssdp_services, 
+												ssdp_service);
 
 	if (service == NULL || service->usn == NULL) {
 		SSDP_LOGE("Service not found");
@@ -659,7 +627,7 @@ int ssdp_get_usn(ssdp_service_h ssdp_service, char **usn)
 	return status;
 }
 
-int ssdp_get_url(ssdp_service_h ssdp_service, char **url)
+int ssdp_service_get_url(ssdp_service_h ssdp_service, char **url)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -678,7 +646,11 @@ int ssdp_get_url(ssdp_service_h ssdp_service, char **url)
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
+	if (service == NULL)
+		service = __ssdp_find_remote_service(g_found_ssdp_services, 
+												ssdp_service);
+
 	if (service == NULL || service->url == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
@@ -690,8 +662,8 @@ int ssdp_get_url(ssdp_service_h ssdp_service, char **url)
 	return status;
 }
 
-int ssdp_register_service(ssdp_service_h ssdp_service,
-					ssdp_register_cb cb, void *user_data)
+int ssdp_register_local_service(ssdp_service_h local_service,
+					ssdp_registered_cb cb, void *user_data)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -699,30 +671,21 @@ int ssdp_register_service(ssdp_service_h ssdp_service,
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
-	if (ssdp_service == 0) {
+	if (local_service == 0) {
 		SSDP_LOGE("Invalid parameter");
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
-	SSDP_LOGD("SSDP service ID [%u]", ssdp_service);
-
-	if (cb == NULL) {
-		// moon: TODO: ssdp_register_cb
-	}
+	SSDP_LOGD("SSDP service ID [%u]", local_service);
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
 	if (service == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
-	}
-
-	if (service->op_type != SSDP_TYPE_REGISTER) {
-		SSDP_LOGE("Invalid operation type");
-		return SSDP_ERROR_INVALID_PARAMETER;
 	}
 
 	if (service->resource_group != NULL) {
@@ -748,6 +711,13 @@ int ssdp_register_service(ssdp_service_h ssdp_service,
 			service->usn,
 			service->url);
 
+	service->origin = SSDP_SERVICE_STATE_REGISTERED;
+	service->registered_cb = cb;
+	service->cb_user_data = user_data;
+
+	gssdp_resource_group_set_available (service->resource_group, TRUE);
+	SSDP_LOGD("Now service is available [%u]", local_service);
+
 	SSDP_LOGD("Resource group id is [%d]\n", service->resource_id);
 	if (service->resource_id == 0)
 		status = SSDP_ERROR_OPERATION_FAILED;
@@ -757,7 +727,7 @@ int ssdp_register_service(ssdp_service_h ssdp_service,
 }
 
 
-int ssdp_deregister_service(ssdp_service_h ssdp_service)
+int ssdp_deregister_local_service(ssdp_service_h local_service)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
@@ -765,26 +735,21 @@ int ssdp_deregister_service(ssdp_service_h ssdp_service)
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
-	if (ssdp_service == 0) {
+	if (local_service == 0) {
 		SSDP_LOGE("Invalid parameter");
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
-	SSDP_LOGD("SSDP service ID [%u]", ssdp_service);
+	SSDP_LOGD("SSDP service ID [%u]", local_service);
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
+	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
 	if (service == NULL) {
 		SSDP_LOGE("Service not found");
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
-	}
-
-	if (service->op_type != SSDP_TYPE_REGISTER) {
-		SSDP_LOGE("Invalid operation type");
-		return SSDP_ERROR_INVALID_PARAMETER;
 	}
 
 	if (service->resource_group != NULL && service->resource_id != 0) {
@@ -794,18 +759,23 @@ int ssdp_deregister_service(ssdp_service_h ssdp_service)
 		service->resource_id = 0;
 	}
 
-	service->register_cb = NULL;
+	service->origin = SSDP_SERVICE_STATE_NOT_REGISTERED;
+	service->registered_cb = NULL;
+	service->cb_user_data = NULL;
+
+	gssdp_resource_group_set_available (service->resource_group, FALSE);
+	SSDP_LOGD("Now service is unavailable [%u]", local_service);
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
 }
 
-int ssdp_browse_service(ssdp_service_h ssdp_service, 
-					ssdp_browse_cb browse_cb, void *user_data)
+int ssdp_start_browsing_service(const char* target, ssdp_browser_h* ssdp_browser, 
+					ssdp_found_cb found_cb, void *user_data)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
-	ssdp_service_s *service = NULL;
+	ssdp_service_s *browser = NULL;
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
@@ -815,96 +785,117 @@ int ssdp_browse_service(ssdp_service_h ssdp_service,
 		return SSDP_ERROR_NOT_INITIALIZED;
 	}
 
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
-	if (service == NULL) {
-		SSDP_LOGE("Service not found");
-		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_SERVICE_NOT_FOUND;
-	}
-
-	if (service->target == NULL) {
-		SSDP_LOGE("Service type is not determined");
-		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_INVALID_PARAMETER; 
-	}
-
-	if (service->op_type != SSDP_TYPE_BROWSE) {
-		SSDP_LOGE("Invalid operation type");
-		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_INVALID_PARAMETER;
-	}
-
-	/** moon
-GLIST_ITER_START(g_ssdp_services, service)
-	if (strncmp(target, service->target, strlen(target)) &&
-			service->origin == SSDP_SERVICE_STATE_BROWSED) {
-		SSDP_LOGD("Browsing request is already registered");
-		return __ssdp_rescan(service);
-	}
-GLIST_ITER_END()
-*/
-
-	if (service->origin == SSDP_SERVICE_STATE_FOUND) {
-		SSDP_LOGD("Browsing for already found service");
-		return __ssdp_rescan(service);
-	}
-
 	if (g_gssdp_client == NULL) {
 		SSDP_LOGE("GSSDPClient is NULL. Init first");
 		__SSDP_LOG_FUNC_EXIT__;
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
-	service->resource_browser = gssdp_resource_browser_new(
-			g_gssdp_client,
-			service->target);
-	if (service->resource_browser == NULL) {
-		SSDP_LOGE("Failed to create service browser\n");
-		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OPERATION_FAILED;
+
+GLIST_ITER_START(g_ssdp_local_services, browser)
+	if (strncmp(target, browser->target, strlen(target)) &&
+			browser->origin == SSDP_SERVICE_STATE_BROWSED) {
+		SSDP_LOGD("Browsing request is already registered");
+	}
+	else {
+		browser = NULL;
+	}
+GLIST_ITER_END()
+
+	if (browser == NULL) {
+		browser = (ssdp_service_s*)g_try_malloc0(sizeof(ssdp_service_s));
+		if (!browser) {
+			SSDP_LOGE("Failed to get memory for gssdp service structure");
+			__SSDP_LOG_FUNC_EXIT__;
+			return SSDP_ERROR_OUT_OF_MEMORY;
+		}
+
+		browser->target = g_strndup(target, strlen(target));
+		if (!browser->target) {
+			SSDP_LOGE("Failed to get memory for gssdp service type");
+			g_free(browser);
+			__SSDP_LOG_FUNC_EXIT__;
+			return SSDP_ERROR_OUT_OF_MEMORY;
+		}
+
+		/* Create browser handle */
+		*ssdp_browser = (unsigned int)browser & 0xFFFFFFFF;
+		SSDP_LOGD("Create handler for browser [%u]", *ssdp_browser);
+		browser->service_handler = *ssdp_browser;
+
+		/* Create the service browser */
+		browser->resource_browser = gssdp_resource_browser_new(
+				g_gssdp_client,
+				browser->target);
+		if (browser->resource_browser == NULL) {
+			SSDP_LOGE("Failed to create service browser\n");
+			__SSDP_LOG_FUNC_EXIT__;
+			return SSDP_ERROR_OPERATION_FAILED;
+		}
+
+		/* Connect signals */
+		g_signal_connect(browser->resource_browser, "resource-available",
+				G_CALLBACK(__ssdp_res_available_cb), browser);
+
+		g_signal_connect(browser->resource_browser, "resource-unavailable",
+				G_CALLBACK(__ssdp_res_unavailable_cb), browser);
+
+		gssdp_resource_browser_set_active(browser->resource_browser, TRUE);
+
+		/* Set properties */
+		browser->origin = SSDP_SERVICE_STATE_BROWSED;
+		g_ssdp_local_services = g_list_append(g_ssdp_local_services, browser);
+	}
+	else {
+		if (!(gssdp_resource_browser_rescan(browser->resource_browser)))
+		{
+			SSDP_LOGE("Failed to request rescan");
+			__SSDP_LOG_FUNC_EXIT__;
+			return SSDP_ERROR_OPERATION_FAILED;
+		}
 	}
 
-	g_signal_connect(service->resource_browser, "resource-available",
-			G_CALLBACK(__ssdp_res_available_cb), &ssdp_service);
-
-	g_signal_connect(service->resource_browser, "resource-unavailable",
-			G_CALLBACK(__ssdp_res_unavailable_cb), &ssdp_service);
-
-	gssdp_resource_browser_set_active (service->resource_browser, TRUE);
-	service->origin = SSDP_SERVICE_STATE_BROWSED;
-	SSDP_LOGD("service ssdp_service [%u]", ssdp_service);
+	browser->found_cb = found_cb;
+	browser->cb_user_data = user_data;
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
 }
 
-int ssdp_stop_browse_service(ssdp_service_h ssdp_service)
+int ssdp_stop_browsing_service(ssdp_browser_h ssdp_browser)
 {
 	__SSDP_LOG_FUNC_ENTER__;
 	int status = SSDP_ERROR_NONE;
-	ssdp_service_s *service = NULL;
+	ssdp_service_s *browser = NULL;
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
-	if (ssdp_service == 0) {
+	if (ssdp_browser == 0) {
 		SSDP_LOGE("Invalid parameter");
 		return SSDP_ERROR_INVALID_PARAMETER;
 	}
 
-	SSDP_LOGD("SSDP service ID [%u]", ssdp_service);
-	service = __ssdp_find_service(g_ssdp_services, ssdp_service);
-	if (service == NULL) {
+	SSDP_LOGD("SSDP browser ID [%u]", ssdp_browser);
+	browser = __ssdp_find_local_service(g_ssdp_local_services, ssdp_browser);
+	if (browser == NULL) {
 		SSDP_LOGE("Service not found");
 		__SSDP_LOG_FUNC_EXIT__;
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	g_object_unref (service->resource_browser);
+	gssdp_resource_browser_set_active (browser->resource_browser, FALSE);
 
-	/* moon: Need?
+	g_object_unref (browser->resource_browser);
+	browser->found_cb = NULL;
+	browser->cb_user_data = NULL;
+
+	g_ssdp_local_services = g_list_remove(g_ssdp_local_services, browser);
+
 	g_hash_table_foreach(g_found_ssdp_services,
 			(GHFunc)__g_hash_remove_related_services,
-			(gpointer)service->service_handler);
-			*/
+			(gpointer)browser->service_handler);
+
+	g_free(browser->target);
+	g_free(browser);
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
