@@ -21,11 +21,11 @@
 #define __FUNC_EXIT__ printf("\n%s() leaving...\n", __func__)
 
 
-void test_register_cb(ssdp_service_h ssdp_service, ssdp_register_state_e state, void *user_data)
+void test_registered_cb(ssdp_error_e result, ssdp_service_h ssdp_service, void *user_data)
 {
 	__FUNC_ENTER__;
-	printf("service handler: %s\n", ssdp_service);
-	printf("state: %d\n", state);
+	printf("service handler: %u\n", ssdp_service);
+	printf("result: %d\n", result);
 	__FUNC_EXIT__;
 }
 
@@ -47,16 +47,16 @@ int main(int argc, char *argv[])
 	if (ssdp_initialize() == 0) {
 		printf(MAKE_GREEN"Initialized"RESET_COLOR"\n");
 	}
-	if (ssdp_create_service(SSDP_TYPE_REGISTER, target, &serv_id) == 0) {
+	if (ssdp_create_local_service(target, &serv_id) == 0) {
 		printf(MAKE_GREEN"Create service. Type: %s, handle: %u "RESET_COLOR"\n", target, serv_id);
 	}
-	if (ssdp_set_usn(serv_id, usn) == 0) {
+	if (ssdp_service_set_usn(serv_id, usn) == 0) {
 		printf(MAKE_GREEN"Set USN %s"RESET_COLOR"\n", usn);
 	}
-	if (ssdp_set_url(serv_id, url) == 0) {
+	if (ssdp_service_set_url(serv_id, url) == 0) {
 		printf(MAKE_GREEN"Set URL %s"RESET_COLOR"\n", url);
 	}
-	if (ssdp_register_service(serv_id, &test_register_cb, NULL) == 0) {
+	if (ssdp_register_local_service(serv_id, &test_registered_cb, NULL) == 0) {
 		printf(MAKE_GREEN"Start registering"RESET_COLOR"\n");
 	}
 
