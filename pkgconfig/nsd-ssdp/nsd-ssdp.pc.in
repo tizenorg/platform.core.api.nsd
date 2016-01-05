@@ -7,5 +7,5 @@ Name: nsd-ssdp
 Description: nsd-ssdp package
 Version: @VERSION@
 Requires:
-Libs: -L${libdir} -lnsd-sspd
+Libs: -L${libdir} -lnsd-ssdp
 Cflags: -I${includedir}/nsd
