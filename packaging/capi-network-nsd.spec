@@ -5,6 +5,9 @@ Release:    1
 Group:      System/Network
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001:    capi-network-nsd.manifest
+Source1002:    libnsd-dns-sd.manifest
+Source1003:    nsd-tests.manifest
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(capi-base-common)
 BuildRequires:  pkgconfig(dlog)
@@ -39,6 +42,12 @@ Network Service Discovery library for DNS-SD
 
 %prep
 %setup -q
+chmod 644 %{SOURCE1001}
+chmod 644 %{SOURCE1002}
+chmod 644 %{SOURCE1003}
+cp -a %{SOURCE1001} .
+cp -a %{SOURCE1002} .
+cp -a %{SOURCE1003} .
 
 %build
 %if 0%{?sec_build_binary_debug_enable}
@@ -69,10 +78,19 @@ rm -rf %{buildroot}
 %postun -n libnsd-dns-sd -p /sbin/ldconfig
 
 %files
+%manifest capi-network-nsd.manifest
 %license LICENSE
 
 %files devel
 %{_includedir}/nsd/*.h
+%{_libdir}/pkgconfig/*.pc
+%{_libdir}/*.so
+
+%files tests
+%manifest nsd-tests.manifest
+%attr(755,root,root) %{_bindir}/dns-sd-test
 
 %files -n libnsd-dns-sd
+%manifest libnsd-dns-sd.manifest
 %license LICENSE
+%{_libdir}/libnsd-dns-sd.so.*
