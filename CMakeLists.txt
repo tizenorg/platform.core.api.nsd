@@ -26,18 +26,13 @@ INCLUDE(FindPkgConfig)
 
 ########################## search for packages ################################
 
-SET(COMMON_DEPS "dlog glib-2.0 gio-2.0 capi-base-common gio-unix-2.0")
+SET(COMMON_DEPS "dlog glib-2.0 gio-2.0 capi-base-common gio-unix-2.0 gssdp-1.0 dns_sd")
 SET(PC_DEPS "capi-base-common")
 
 
 PKG_CHECK_MODULES(NSD_DEPS REQUIRED ${COMMON_DEPS})
 
 ########################  directory configuration  ############################
-
-SET(LIB_DIR
-    "${CMAKE_INSTALL_PREFIX}/lib"
-    CACHE PATH
-    "Object code libraries directory")
 
 SET(BIN_DIR
     "${CMAKE_INSTALL_PREFIX}/bin"
@@ -83,7 +78,7 @@ FOREACH(flag ${NSD_DEPS_CFLAGS})
 ENDFOREACH(flag)
 
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall -ldns_sd")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall")
 SET(CMAKE_C_FLAGS_DEBUG      "-O0 -g")
 SET(CMAKE_C_FLAGS_RELEASE    "-O2 -g")
 
@@ -94,6 +89,7 @@ SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed -Wl,--rpath=${LIBDIR}")
 
 SET(TARGET_NSD "nsd")
 SET(TARGET_LIB_NSD_DNS_SD "nsd-dns-sd")
+SET(TARGET_LIB_NSD_SSDP "nsd-ssdp")
 SET(TARGET_NSD_TESTS "nsd-tests")
 
 
