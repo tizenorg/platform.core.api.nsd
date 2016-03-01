@@ -118,7 +118,7 @@ int test_dnssd_initialize()
 	if(rv != DNSSD_ERROR_NONE) {
 		printf("Failed to Initialize DNS SD CAPI [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 	printf("Successfully Initialized DNS SD CAPI\n");
 	return 1;
@@ -133,7 +133,7 @@ int test_dnssd_deinitialize()
 	if(rv != DNSSD_ERROR_NONE) {
 		printf("Failed to De-Initialize DNS SD CAPI [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 	printf("Successfully De-Initialized DNS SD CAPI\n");
 	return 1;
@@ -152,7 +152,7 @@ int test_dnssd_create_local_service()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to create DNS SD Service, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	printf("Successfully created DNS SD Service[%u]\n", service);
@@ -170,7 +170,7 @@ int test_dnssd_destroy_local_service()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to destroy DNS SD Service, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	printf("Successfully destroyed DNS SD Service\n");
@@ -265,7 +265,7 @@ int test_dnssd_service_get_type()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to get DNS SD Service type, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	if (type)
@@ -287,7 +287,7 @@ int test_dnssd_service_get_name()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to get DNS SD Service name, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	if (name)
@@ -310,7 +310,7 @@ int test_dnssd_service_get_ip()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to get DNS SD Service IP, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	printf("Service IP v4 [%s]\n", ip_v4_address);
@@ -333,7 +333,7 @@ int test_dnssd_service_get_port()
 	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to get DNS SD Service port, error [%s]\n",
 				dnssd_error_to_string(rv));
-		return rv;
+		return 0;
 	}
 
 	printf("Service port [%d]\n", port);
@@ -477,10 +477,10 @@ static void dnssd_browse_reply(dnssd_service_state_e service_state,
 
 		g_free(ip_v4_address);
 		g_free(ip_v6_address);
-		g_free(name);
-		g_free(type);
 		g_free(txt_record);
 	}
+	g_free(name);
+	g_free(type);
 }
 
 int test_dnssd_start_browsing_service()
