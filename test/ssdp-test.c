@@ -94,7 +94,7 @@ int test_ssdp_create_service()
 	ssdp_service_h serv_id;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
-	if(scanf("%ms", &target) < 1)
+	if(scanf("%255ms", &target) < 1)
 		return -1;
 
 
@@ -146,7 +146,7 @@ int test_ssdp_set_usn()
 		return -1;
 
 	printf("\nEnter usn: (Example : uuid:1234abcd-12ab-12ab-12ab-1234567abc12::upnp:rootdevice)");
-	if(scanf("%ms", &usn) < 1)
+	if(scanf("%255ms", &usn) < 1)
 		return -1;
 
 	rv = ssdp_service_set_usn(serv_id, usn);
@@ -174,7 +174,7 @@ int test_ssdp_set_url()
 		return -1;
 
 	printf("\nEnter url: (Example : http://192.168.0.110/)");
-	if(scanf("%ms", &url) < 1)
+	if(scanf("%255ms", &url) < 1)
 		return -1;
 
 	rv = ssdp_service_set_url(serv_id, url);
@@ -337,7 +337,7 @@ int test_ssdp_service_browse()
 	char *target = NULL;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
-	if(scanf("%ms", &target) < 1)
+	if(scanf("%255ms", &target) < 1)
 		return -1;
 
 	rv = ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL);

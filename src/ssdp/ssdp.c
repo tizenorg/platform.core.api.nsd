@@ -307,6 +307,7 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 	if (found_service != NULL &&
 			g_strcmp0(found_service->usn, usn) == 0) {
 		SSDP_LOGD("Duplicated service!");
+		g_free(temp_url);
 		__SSDP_LOG_FUNC_EXIT__;
 		return;
 	}
@@ -314,6 +315,7 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 	found_service = (ssdp_service_s *)g_try_malloc0(sizeof(ssdp_service_s));
 	if (!found_service) {
 		SSDP_LOGE("Failed to get memory for ssdp service structure");
+		g_free(temp_url);
 		__SSDP_LOG_FUNC_EXIT__;
 		return;
 	}
@@ -364,6 +366,11 @@ __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 
 	SSDP_LOGD("resource unavailable\n  USN: %s\n", usn);
 
+	if (browser->found_cb) {
+		browser->found_cb(found_service->service_handler,
+				SSDP_SERVICE_STATE_UNAVAILABLE, browser->cb_user_data);
+	}
+
 	g_hash_table_remove(g_found_ssdp_services, usn);
 	g_free(found_service->target);
 	g_free(found_service->usn);
@@ -371,11 +378,6 @@ __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 	g_free(found_service);
 
 	SSDP_LOGD("Hash tbl size [%d]", g_hash_table_size(g_found_ssdp_services));
-
-	if (browser->found_cb) {
-		browser->found_cb(found_service->service_handler,
-				SSDP_SERVICE_STATE_UNAVAILABLE, browser->cb_user_data);
-	}
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return;
