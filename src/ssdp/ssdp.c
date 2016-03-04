@@ -323,7 +323,7 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 	SSDP_LOGD("resource available\nUSN: %s", usn);
 
 	found_service->usn = g_strdup(usn);
-	found_service->url= temp_url;
+	found_service->url = temp_url;
 	found_service->service_handler = (unsigned int)found_service & 0xffffffff;
 	found_service->browser_id = browser->service_handler;
 	found_service->origin = SSDP_SERVICE_STATE_FOUND;
@@ -335,8 +335,8 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 	SSDP_LOGD("Hash tbl size [%d]", g_hash_table_size(g_found_ssdp_services));
 
 	if (browser->found_cb) {
-		browser->found_cb(found_service->service_handler,
-				SSDP_SERVICE_STATE_AVAILABLE, browser->cb_user_data);
+		browser->found_cb(SSDP_SERVICE_STATE_AVAILABLE,
+				found_service->service_handler, browser->cb_user_data);
 	}
 
 	__SSDP_LOG_FUNC_EXIT__;
@@ -796,6 +796,11 @@ int ssdp_register_local_service(ssdp_service_h local_service,
 			service->usn,
 			service->url);
 
+	if (service->resource_id == 0) {
+		SSDP_LOGE("Failed to add resource");
+		return SSDP_ERROR_OPERATION_FAILED;
+	}
+
 	service->origin = SSDP_SERVICE_STATE_REGISTERED;
 	service->registered_cb = cb;
 	service->cb_user_data = user_data;
@@ -804,8 +809,6 @@ int ssdp_register_local_service(ssdp_service_h local_service,
 	SSDP_LOGD("Now service is available [%u]", local_service);
 
 	SSDP_LOGD("Resource group id is [%d]\n", service->resource_id);
-	if (service->resource_id == 0)
-		status = SSDP_ERROR_OPERATION_FAILED;
 
 	__SSDP_LOG_FUNC_EXIT__;
 	return status;
