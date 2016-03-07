@@ -775,6 +775,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	dnssd_found_data_s *found = NULL;
 	char *name;
 	char *domain;
+	char *save_str = NULL;
 	int dns_protocol = kDNSServiceProtocol_IPv4 | kDNSServiceProtocol_IPv6;
 
 	if(dnssd_handle == NULL) {
@@ -786,10 +787,10 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	/* fullname is of the form <servicename>.<protocol>.<domain>
 	 * Extract servicename and domain from fullname */
 	name = g_strdup(fullname);
-	domain = strtok(name, ".");
-	domain = strtok(NULL, ".");
-	domain = strtok(NULL, ".");
-	domain = strtok(NULL, ".");
+	domain = strtok_r(name, ".", save_str);
+	domain = strtok_r(NULL, ".", save_str);
+	domain = strtok_r(NULL, ".", save_str);
+	domain = strtok_r(NULL, ".", save_str);
 
 	local_handle = g_try_malloc0(FOUND_SIZE);
 	if(local_handle == NULL) {
