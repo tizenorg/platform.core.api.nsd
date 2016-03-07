@@ -25,7 +25,7 @@ static bool test_get_user_string(const char *msg, char *buf, int buf_size)
 		if (i == 0 && c == '\n')
 			continue;
 
-		if (c == '\n')
+		if (c == '\n' || c == EOF)
 			break;
 
 		buf[i++] = c;
@@ -50,7 +50,7 @@ static bool test_get_user_bytes(const char *msg, char *buf, int buf_size)
 		if (i == 0 && c == '\n')
 			continue;
 
-		if (c == '\n')
+		if (c == '\n' || c == EOF)
 			break;
 
 		buf[i++] = c;
