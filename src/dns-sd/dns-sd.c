@@ -187,13 +187,13 @@ int dnssd_destroy_local_service(dnssd_service_h dnssd_service)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	DNSSD_LOGD("Destroy handle: [%p]->[%u]", local_handle, dnssd_service);
@@ -234,13 +234,13 @@ int dnssd_service_set_name(dnssd_service_h local_service,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -277,13 +277,13 @@ int dnssd_service_set_port(dnssd_service_h local_service, int port)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -316,13 +316,13 @@ int dnssd_service_add_txt_record(dnssd_service_h local_service,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (key == NULL) {
@@ -371,23 +371,23 @@ int dnssd_service_remove_txt_record(dnssd_service_h local_service,
 		return DNSSD_ERROR_NOT_INITIALIZED;
 	}
 
+	if (key == NULL) {
+		DNSSD_LOGE("key is NULL");
+		__DNSSD_LOG_FUNC_EXIT__;
+		return DNSSD_ERROR_INVALID_PARAMETER;
+	}
+
 	local_handle = __dnssd_check_handle_validity(local_service);
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
-	}
-
-	if (key == NULL) {
-		DNSSD_LOGE("key is NULL");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -437,13 +437,13 @@ int dnssd_service_set_record(dnssd_service_h local_service, unsigned short type,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -495,13 +495,13 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -595,7 +595,7 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (register_cb == NULL) {
@@ -607,7 +607,7 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -664,13 +664,13 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
 		DNSSD_LOGD("DNSSD service is not a local service");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	sd_ref = local_handle->sd_ref;
@@ -1121,7 +1121,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler 0x%x not found", dnssd_service);
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_BROWSE) {
@@ -1186,7 +1186,7 @@ int dnssd_service_get_type(dnssd_service_h dnssd_service, char **service_type)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	} else {
 		*service_type = g_strdup(local_handle->service_type);
 		DNSSD_LOGD("Service Type %s", *service_type);
@@ -1219,7 +1219,7 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
@@ -1270,7 +1270,7 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if(local_handle->op_type != DNSSD_TYPE_FOUND) {
@@ -1323,7 +1323,7 @@ int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 	if (local_handle == NULL) {
 		DNSSD_LOGD("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
@@ -1365,7 +1365,7 @@ int dnssd_service_get_all_txt_record(dnssd_service_h dnssd_service,
 	if (local_handle == NULL) {
 		DNSSD_LOGE("Service Handler not found");
 		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
 	if (value == NULL || length == NULL) {

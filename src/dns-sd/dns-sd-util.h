@@ -32,7 +32,7 @@
 #define __DNSSD_LOG_FUNC_ENTER__ LOGD("Enter")
 #define __DNSSD_LOG_FUNC_EXIT__ LOGD("Quit")
 
-#define NETWORK_SERVICE_DISCOVERY_FEATURE	"http://tizen.org/feature/network.service_discovery"
+#define NETWORK_SERVICE_DISCOVERY_FEATURE	"http://tizen.org/feature/network.service_discovery.dnssd"
 
 #if 0
 #define CHECK_FEATURE_SUPPORTED(feature_name)\
