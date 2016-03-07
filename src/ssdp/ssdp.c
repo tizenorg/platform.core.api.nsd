@@ -80,7 +80,7 @@ typedef struct {
 static __thread gboolean g_is_gssdp_init;
 static __thread GSSDPClient *g_gssdp_client = NULL;
 
-static __thread GList *g_ssdp_local_services;
+static __thread GList *g_ssdp_local_services = NULL;
 static __thread GHashTable *g_found_ssdp_services = NULL;
 //static __thread GList *g_ssdp_browsers; TODO
 /*****************************************************************************
@@ -202,7 +202,7 @@ static ssdp_service_s *__ssdp_find_local_service_with_usn(GList *services,
 	GList *list;
 	for (list = services; list != NULL; list = list->next) {
 		service = list->data;
-		if (service && strncmp(service->usn, usn, strlen(usn))) {
+		if (service && !g_strcmp0(service->usn, usn)) {
 			SSDP_LOGD("USN [%s]", service->usn);
 			break;
 		}
@@ -222,7 +222,7 @@ static ssdp_service_s *__ssdp_find_local_service_with_url(GList *services,
 	GList *list;
 	for (list = services; list != NULL; list = list->next) {
 		service = list->data;
-		if (service && strncmp(service->url, url, strlen(url))) {
+		if (service && !g_strcmp0(service->url, url)) {
 			SSDP_LOGD("URL [%s]", service->url);
 			break;
 		}
@@ -881,7 +881,7 @@ int ssdp_start_browsing_service(const char* target, ssdp_browser_h* ssdp_browser
 	}
 
 GLIST_ITER_START(g_ssdp_local_services, browser)
-	if (strncmp(target, browser->target, strlen(target)) &&
+	if (!strncmp(target, browser->target, strlen(target)) &&
 			browser->origin == SSDP_SERVICE_STATE_BROWSED) {
 		SSDP_LOGD("Browsing request is already registered");
 	}
