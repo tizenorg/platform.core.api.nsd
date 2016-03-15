@@ -1388,7 +1388,7 @@ int dnssd_service_get_all_txt_record(dnssd_service_h dnssd_service,
 		reg = GET_REG_DATA_P(local_handle);
 		txt_record = &(reg->txt_ref);
 
-		*value = TXTRecordGetBytesPtr(txt_record);
+		*value = g_strdup(TXTRecordGetBytesPtr(txt_record));
 		*length = TXTRecordGetLength(txt_record);
 	}
 
