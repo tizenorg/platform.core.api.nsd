@@ -112,40 +112,14 @@ static int __dnssd_launch_mdns_dbus(void)
 	return DNSSD_ERROR_NONE;
 }
 
-int __dnssd_launch_mdns()
-{
-	int res = DNSSD_ERROR_NONE;
-	int dnssd_err = 0;
-	int retry_count = DNSSD_MDNSD_LAUNCH_RETRY_THRESHOLD;
-	uint32_t version = 0;
-	uint32_t size = sizeof(version);
-
-	while (retry_count >= 0) {
-		dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion, &version, &size);
-		if (!dnssd_err){
-			DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
-			res = DNSSD_ERROR_NONE;
-			break;
-		} else { 
-			DNSSD_LOGE("Daemon is not running");
-		}
-
-		DNSSD_LOGD("Launching mdnsresponder. retry count: %d", retry_count);
-		res = __dnssd_launch_mdns_dbus();
-		if (res != DNSSD_ERROR_NONE) 
-			DNSSD_LOGE("Fail to send dbus msg");
-		retry_count--;
-
-		/* wait a little before retrying the next trial */
-		usleep(DNSSD_MDNSD_LAUNCH_TRIAL_INTERVAL);
-	}
-	return res;
-}
-
 int dnssd_initialize(void)
 {
 	__DNSSD_LOG_FUNC_ENTER__;
+	int retry_count = 10;
+	int dnssd_err = 0;
 	int res = 0;
+	uint32_t version = 0;
+	uint32_t size = sizeof(version);
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
@@ -155,9 +129,32 @@ int dnssd_initialize(void)
 		return DNSSD_ERROR_INVALID_OPERATION;
 	}
 
-	res = __dnssd_launch_mdns();
+	while (retry_count > 0) {
+		dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion,
+				&version, &size);
+		if (!dnssd_err){
+			DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
+			res = 0;
+			break;
+		} else {
+			DNSSD_LOGE("Daemon is not running");
+			res = DNSSD_ERROR_SERVICE_NOT_RUNNING;
+		}
 
-	if (res != DNSSD_ERROR_NONE) {
+		DNSSD_LOGD("Launching mdnsresponder");
+
+		res = __dnssd_launch_mdns_dbus();
+		if (res == DNSSD_ERROR_NONE) {
+			DNSSD_LOGE("Success to send dbus msg");
+			break;
+		}
+		retry_count--;
+
+		/* wait a little before retrying the next trial */
+		usleep(150000);
+	}
+
+	if (res < 0) {
 		DNSSD_LOGE("Failed to launch mdnsresponder");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return res;
