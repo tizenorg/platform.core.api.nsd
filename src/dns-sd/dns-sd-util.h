@@ -60,6 +60,12 @@
 #define IPV4_LEN 4
 #define IPV6_LEN 16
 
+#define NETCONFIG_SERVICE		"net.netconfig"
+#define NETCONFIG_NETWORK_INTERFACE	"net.netconfig.network"
+#define NETCONFIG_NETWORK_PATH		"/net/netconfig/network"
+#define NETCONFIG_NETWORK_LAUNCHMDNS	"LaunchMdns"
+#define DBUS_REPLY_TIMEOUT (120 * 1000)
+
 typedef enum {
 	DNSSD_TYPE_UNKNOWN = 0	/**<DNS-SD service type unknown */,
 	DNSSD_TYPE_REGISTER = 1	/**<DNS-SD service type register */,
