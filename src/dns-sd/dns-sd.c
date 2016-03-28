@@ -97,6 +97,8 @@ int dnssd_deinitialize(void)
 		return DNSSD_ERROR_NOT_INITIALIZED;
 	}
 
+	g_is_init = false;
+
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
 }
