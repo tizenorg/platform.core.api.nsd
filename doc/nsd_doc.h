@@ -33,7 +33,7 @@
  * You should stop browsing if you do not need it anymore.
  * @section CAPI_NETWORK_SSDP_MODULE_FEATURE Related Features
  * This API is related with the following features:\n
- * - http://tizen.org/feature/network.service_discovery.ssdp 
+ * - http://tizen.org/feature/network.service_discovery.ssdp
  *
  * It is recommended to design feature related codes in your application for reliability.\n
  *

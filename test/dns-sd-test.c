@@ -33,7 +33,7 @@ static bool test_get_user_string(const char *msg, char *buf, int buf_size)
 			break;
 	}
 
-	buf[i]='\0';
+	buf[i] = '\0';
 	return true;
 }
 
@@ -115,7 +115,7 @@ int test_dnssd_initialize()
 	printf("Initialize DNS SD CAPI\n");
 
 	rv = dnssd_initialize();
-	if(rv != DNSSD_ERROR_NONE) {
+	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to Initialize DNS SD CAPI [%s]\n",
 				dnssd_error_to_string(rv));
 		return 0;
@@ -130,7 +130,7 @@ int test_dnssd_deinitialize()
 	printf("De-Initialize DNS SD CAPI\n");
 
 	rv = dnssd_deinitialize();
-	if(rv != DNSSD_ERROR_NONE) {
+	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to De-Initialize DNS SD CAPI [%s]\n",
 				dnssd_error_to_string(rv));
 		return 0;
@@ -244,7 +244,7 @@ int test_dnssd_deregister_local_service()
 	rv = scanf("%u", &service);
 
 	rv = dnssd_deregister_local_service(service);
-	if(rv != DNSSD_ERROR_NONE) {
+	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to deregister dns service, error [%s]\n",
 				dnssd_error_to_string(rv));
 		return 0;
@@ -445,14 +445,14 @@ static void dnssd_browse_reply(dnssd_service_state_e service_state,
 	char *type = NULL;
 
 	rv = dnssd_service_get_name(remote_service, &name);
-	if(rv == DNSSD_ERROR_NONE && name != NULL)
+	if (rv == DNSSD_ERROR_NONE && name != NULL)
 		printf("Service Name  : %s\n", name);
 
 	rv = dnssd_service_get_type(remote_service, &type);
-	if(rv == DNSSD_ERROR_NONE && type != NULL)
+	if (rv == DNSSD_ERROR_NONE && type != NULL)
 		printf("Service Type  : %s\n", type);
 
-	if(service_state == DNSSD_SERVICE_STATE_AVAILABLE) {
+	if (service_state == DNSSD_SERVICE_STATE_AVAILABLE) {
 		char *ip_v4_address = NULL;
 		char *ip_v6_address = NULL;
 		char *txt_record = NULL;
@@ -460,10 +460,10 @@ static void dnssd_browse_reply(dnssd_service_state_e service_state,
 		int port = 0;
 
 		rv = dnssd_service_get_ip(remote_service, &ip_v4_address, &ip_v6_address);
-		if(rv  == DNSSD_ERROR_NONE) {
-			if(ip_v4_address)
+		if (rv  == DNSSD_ERROR_NONE) {
+			if (ip_v4_address)
 			printf("IPv4 Address  : %s\n", ip_v4_address);
-			if(ip_v6_address)
+			if (ip_v6_address)
 			printf("IPv6 Address  : %s\n", ip_v6_address);
 		}
 
@@ -513,7 +513,7 @@ int test_dnssd_stop_browsing_service()
 	rv = scanf("%u", &service);
 
 	rv = dnssd_stop_browsing_service(service);
-	if(rv != DNSSD_ERROR_NONE) {
+	if (rv != DNSSD_ERROR_NONE) {
 		printf("Failed to stop browse dns service %s\n",
 				dnssd_error_to_string(rv));
 		return 0;
@@ -607,7 +607,7 @@ int test_thread(GIOChannel *source, GIOCondition condition, gpointer data)
 int main(int argc, char **argv)
 {
 	GMainLoop *mainloop;
-	mainloop = g_main_loop_new (NULL, FALSE);
+	mainloop = g_main_loop_new(NULL, FALSE);
 
 	GIOChannel *channel = g_io_channel_unix_new(0);
 	g_io_add_watch(channel, (G_IO_IN|G_IO_ERR|G_IO_HUP|G_IO_NVAL),
@@ -615,7 +615,7 @@ int main(int argc, char **argv)
 
 	printf("Test Thread created...\n");
 
-	g_main_loop_run (mainloop);
+	g_main_loop_run(mainloop);
 
 	printf("Test Application Terminated\n");
 	g_main_loop_unref(mainloop);

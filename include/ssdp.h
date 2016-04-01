@@ -41,8 +41,7 @@ extern "C" {
  * @brief Enumeration for Network Service Discovery SSDP error code.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	SSDP_ERROR_NONE = TIZEN_ERROR_NONE,  /**< Successful */
 	SSDP_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,  /**< Out of memory */
 	SSDP_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,  /**< Invalid function parameter */
@@ -57,8 +56,7 @@ typedef enum
  * @brief Enumeration for Network Service Discovery SSDP service browse state.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	SSDP_SERVICE_STATE_AVAILABLE,		/**< A new service is available */
 	SSDP_SERVICE_STATE_UNAVAILABLE,		/**< A service is not available */
 } ssdp_service_state_e;
@@ -83,7 +81,7 @@ typedef unsigned int ssdp_browser_h;
  * @param[in] user_data The user data passed from the request function
  * @see ssdp_register_local_service()
  */
-typedef void (*ssdp_registered_cb) (ssdp_error_e result, 
+typedef void (*ssdp_registered_cb) (ssdp_error_e result,
 						ssdp_service_h ssdp_local_service, void *user_data);
 
 /**
@@ -153,7 +151,7 @@ int ssdp_destroy_local_service(ssdp_service_h local_service);
  * @since_tizen 3.0
  * @remarks You must pass only @a unregistered local_service created using ssdp_create_local_service(). If @a local_service is already registered, you cannot set @usn
  * @param[in] local_service The SSDP local service handle
- * @param[in] usn The USN of SSDP local service 
+ * @param[in] usn The USN of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized
@@ -169,7 +167,7 @@ int ssdp_service_set_usn(ssdp_service_h local_service, const char *usn);
  * @since_tizen 3.0
  * @remarks You must pass only unregistered @a local_service created using ssdp_create_local_service(). If @a local_service is already registered, you cannot set @url
  * @param[in] local_service The SSDP local service handle
- * @param[in] url The URL of SSDP local service 
+ * @param[in] url The URL of SSDP local service
  * @return 0 on success, otherwise negative error value
  * @retval #SSDP_ERROR_NONE Successful
  * @retval #SSDP_ERROR_NOT_INITIALIZED Not initialized

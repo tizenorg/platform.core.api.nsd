@@ -28,7 +28,7 @@ void test_found_cb(ssdp_service_state_e state, ssdp_service_h ssdp_service, void
 	printf("service handler: %u\n", ssdp_service);
 	ssdp_service_get_usn(ssdp_service, &usn);
 	ssdp_service_get_url(ssdp_service, &url);
-	printf("state: %s\n", state==SSDP_SERVICE_STATE_AVAILABLE?"AVAILABLE":"UNAVAILABE");
+	printf("state: %s\n", state == SSDP_SERVICE_STATE_AVAILABLE ? "AVAILABLE" : "UNAVAILABE");
 	printf("usn: %s\n", usn);
 	printf("url: %s\n", url);
 	__FUNC_EXIT__;
@@ -42,22 +42,21 @@ int main(int argc, char *argv[])
 	char *target = "upnp:rootdevice";
 
 	/* Initialize required subsystems */
-#if !GLIB_CHECK_VERSION(2,35,0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
-	if (ssdp_initialize() == 0) {
+	if (ssdp_initialize() == 0)
 		printf(MAKE_GREEN"Initialized"RESET_COLOR"\n");
-	}
-	if (ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL) == 0) {
+
+	if (ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL) == 0)
 		printf(MAKE_GREEN"Start browsing"RESET_COLOR"\n");
-	}
 
 	/* Crate the GLIB main loop */
 	main_loop = g_main_loop_new(NULL, FALSE);
 
 	/* Run the main loop */
-	g_main_loop_run (main_loop);
+	g_main_loop_run(main_loop);
 
 	g_main_loop_unref(main_loop);
 

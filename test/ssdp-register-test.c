@@ -40,31 +40,30 @@ int main(int argc, char *argv[])
 
 
 	/* Initialize required subsystems */
-#if !GLIB_CHECK_VERSION(2,35,0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
-	if (ssdp_initialize() == 0) {
+	if (ssdp_initialize() == 0)
 		printf(MAKE_GREEN"Initialized"RESET_COLOR"\n");
-	}
-	if (ssdp_create_local_service(target, &serv_id) == 0) {
+
+	if (ssdp_create_local_service(target, &serv_id) == 0)
 		printf(MAKE_GREEN"Create service. Type: %s, handle: %u "RESET_COLOR"\n", target, serv_id);
-	}
-	if (ssdp_service_set_usn(serv_id, usn) == 0) {
+
+	if (ssdp_service_set_usn(serv_id, usn) == 0)
 		printf(MAKE_GREEN"Set USN %s"RESET_COLOR"\n", usn);
-	}
-	if (ssdp_service_set_url(serv_id, url) == 0) {
+
+	if (ssdp_service_set_url(serv_id, url) == 0)
 		printf(MAKE_GREEN"Set URL %s"RESET_COLOR"\n", url);
-	}
-	if (ssdp_register_local_service(serv_id, &test_registered_cb, NULL) == 0) {
+
+	if (ssdp_register_local_service(serv_id, &test_registered_cb, NULL) == 0)
 		printf(MAKE_GREEN"Start registering"RESET_COLOR"\n");
-	}
 
 	/* Crate the GLIB main loop */
 	main_loop = g_main_loop_new(NULL, FALSE);
 
 	/* Run the main loop */
-	g_main_loop_run (main_loop);
+	g_main_loop_run(main_loop);
 
 	g_main_loop_unref(main_loop);
 

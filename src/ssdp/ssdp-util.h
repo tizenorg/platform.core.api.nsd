@@ -44,33 +44,33 @@
 
 #endif /* USE_DLOG */
 
-#define NETWORK_SERVICE_DISCOVERY_FEATURE 	"http://tizen.org/feature/network.service_discovery"
+#define NETWORK_SERVICE_DISCOVERY_FEATURE "http://tizen.org/feature/network.service_discovery"
 
 #if 0
 #define CHECK_FEATURE_SUPPORTED(feature_name)\
 	do {\
 		bool feature_supported = FALSE;\
-		if(!system_info_get_platform_bool(feature_name, &feature_supported)){\
-			if(feature_supported == FALSE){\
+		if (!system_info_get_platform_bool(feature_name, &feature_supported)) {\
+			if (feature_supported == FALSE) {\
 				LOGE("%s feature is disabled", feature_name);\
 				return NSD_ERROR_NOT_SUPPORTED;\
-			}\
+			} \
 		} else {\
 			LOGE("Error - Feature getting from System Info");\
 			return NSD_ERROR_OPERATION_FAILED;\
-		}\
-	}while(0)
+		} \
+	} while (0)
 
 #else
 #define CHECK_FEATURE_SUPPORTED(feature_name)
 #endif
 
 #define GLIST_ITER_START(arg_list, elem) \
-        GList *temp = NULL; \
-        temp = g_list_first(arg_list); \
-        while (temp) {\
-                elem = temp->data;\
-                temp = g_list_next(temp); \
+		GList *temp = NULL; \
+		temp = g_list_first(arg_list); \
+		while (temp) {\
+			elem = temp->data;\
+			temp = g_list_next(temp); \
 
 #define GLIST_ITER_END() }
 
