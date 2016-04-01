@@ -21,8 +21,7 @@ extern "C" {
  * @brief Enumeration for Network Service Discovery DNSSD error code.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	DNSSD_ERROR_NONE = TIZEN_ERROR_NONE,					/**< Successful */
 	DNSSD_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory*/
 	DNSSD_ERROR_INVALID_OPERATION = TIZEN_ERROR_INVALID_OPERATION,		/**< Invalid operation */
@@ -40,8 +39,7 @@ typedef enum
  * @brief Enumeration for Network Service Discovery DNSSD browse state.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	DNSSD_SERVICE_STATE_AVAILABLE,			/**<Available DNS-SD service found */
 	DNSSD_SERVICE_STATE_UNAVAILABLE,		/**<DNS-SD service not available */
 	DNSSD_SERVICE_STATE_NAME_LOOKUP_FAILED,		/**<Lookup failure for service name */

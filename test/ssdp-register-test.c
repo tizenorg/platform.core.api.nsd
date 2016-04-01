@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
 
 	/* Initialize required subsystems */
-#if !GLIB_CHECK_VERSION(2,35,0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 	main_loop = g_main_loop_new(NULL, FALSE);
 
 	/* Run the main loop */
-	g_main_loop_run (main_loop);
+	g_main_loop_run(main_loop);
 
 	g_main_loop_unref(main_loop);
 

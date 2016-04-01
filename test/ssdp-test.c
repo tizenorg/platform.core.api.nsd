@@ -24,12 +24,12 @@
 void __ssdp_available_cb (ssdp_service_state_e state,
 						const char *usn, const char *urls, void *user_data)
 {
-	printf(MAKE_GREEN"cb %s "RESET_COLOR"\n", __func__ );
-	if(state == SSDP_SERIVCE_AVAILABLE) {
+	printf(MAKE_GREEN"cb %s "RESET_COLOR"\n", __func__);
+	if (state == SSDP_SERIVCE_AVAILABLE) {
 		printf("usn : [%s]\n", usn);
 		printf("url : [%s]\n", urls);
 	}
-	else if(state == SSDP_SERIVCE_UNAVAILABLE) {
+	else if (state == SSDP_SERIVCE_UNAVAILABLE) {
 		printf("service unavailable\n");
 	}
 }
@@ -37,16 +37,16 @@ void __ssdp_available_cb (ssdp_service_state_e state,
 void __foreach_ssdp_found_cb (const char *target,
 		const char *usn, const char *urls, void *user_data)
 {
-	printf(MAKE_GREEN"\ncb %s "RESET_COLOR"\n", __func__ );
+	printf(MAKE_GREEN"\ncb %s "RESET_COLOR"\n", __func__);
 
-	if(target)
+	if (target)
 		printf("target [%s]\n", target);
-	if(usn)
+	if (usn)
 		printf("usn [%s]\n", usn);
-	if(urls)
+	if (urls)
 		printf("urls [%s]\n", urls);
 
-	printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 	__FUNC_EXIT__;
 	return;
 }
@@ -58,8 +58,8 @@ int test_ssdp_initialize()
 	int rv = 0;
 
 	rv = ssdp_initialize();
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -75,8 +75,8 @@ int test_ssdp_deinitialize()
 	int rv = 0;
 
 	rv = ssdp_deinitialize();
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -94,7 +94,7 @@ int test_ssdp_create_service()
 	ssdp_service_h serv_id;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
-	if(scanf("%255ms", &target) < 1)
+	if (scanf("%255ms", &target) < 1)
 		return -1;
 
 
@@ -102,8 +102,8 @@ int test_ssdp_create_service()
 	g_free(target);
 	printf("service handler %u\n", serv_id);
 
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		return 1;
 	}
 
@@ -119,12 +119,12 @@ int test_ssdp_destroy_service()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_destroy_local_service(serv_id);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -142,17 +142,17 @@ int test_ssdp_set_usn()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	printf("\nEnter usn: (Example : uuid:1234abcd-12ab-12ab-12ab-1234567abc12::upnp:rootdevice)");
-	if(scanf("%255ms", &usn) < 1)
+	if (scanf("%255ms", &usn) < 1)
 		return -1;
 
 	rv = ssdp_service_set_usn(serv_id, usn);
 	g_free(usn);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -170,17 +170,17 @@ int test_ssdp_set_url()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	printf("\nEnter url: (Example : http://192.168.0.110/)");
-	if(scanf("%255ms", &url) < 1)
+	if (scanf("%255ms", &url) < 1)
 		return -1;
 
 	rv = ssdp_service_set_url(serv_id, url);
 	g_free(url);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -198,14 +198,14 @@ int test_ssdp_get_target()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_service_get_target(serv_id, &target);
-	if(rv == 0) {
+	if (rv == 0) {
 		printf("target [%s]\n", target);
 		g_free(target);
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -223,14 +223,14 @@ int test_ssdp_get_usn()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_service_get_usn(serv_id, &usn);
-	if(rv == 0) {
+	if (rv == 0) {
 		printf("usn [%s]\n", usn);
 		g_free(usn);
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		return 1;
 	}
 
@@ -246,14 +246,14 @@ int test_ssdp_get_url()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_service_get_url(serv_id, &url);
-	if(rv == 0) {
+	if (rv == 0) {
 		printf("url [%s]\n", url);
 		g_free(url);
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -279,7 +279,7 @@ void test_found_cb(ssdp_service_state_e state, ssdp_service_h ssdp_service, void
 	printf("service handler: %u\n", ssdp_service);
 	ssdp_service_get_usn(ssdp_service, &usn);
 	ssdp_service_get_url(ssdp_service, &url);
-	printf("state: %s\n", state==SSDP_SERVICE_STATE_AVAILABLE?"AVAILABLE":"UNAVAILABE");
+	printf("state: %s\n", state == SSDP_SERVICE_STATE_AVAILABLE ? "AVAILABLE" : "UNAVAILABE");
 	printf("usn: %s\n", usn);
 	printf("url: %s\n", url);
 	__FUNC_EXIT__;
@@ -292,12 +292,12 @@ int test_ssdp_register_service()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_register_local_service(serv_id, &test_registered_cb, NULL);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -314,12 +314,12 @@ int test_ssdp_deregister_service()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_deregister_local_service(serv_id);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -337,13 +337,13 @@ int test_ssdp_service_browse()
 	char *target = NULL;
 
 	printf("\nEnter target: (Example : upnp:rootdevice)");
-	if(scanf("%255ms", &target) < 1)
+	if (scanf("%255ms", &target) < 1)
 		return -1;
 
 	rv = ssdp_start_browsing_service(target, &browser_id, &test_found_cb, NULL);
 	g_free(target);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -360,12 +360,12 @@ int test_ssdp_service_stop_browse()
 	ssdp_browser_h browser_id = 0;
 
 	printf("\nEnter browser id: ");
-	if(scanf("%u", &browser_id) < 1)
+	if (scanf("%u", &browser_id) < 1)
 		return -1;
 
 	rv = ssdp_stop_browsing_service(browser_id);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -383,12 +383,12 @@ int test_ssdp_foreach_found()
 	ssdp_service_h serv_id = 0;
 
 	printf("\nEnter service id: ");
-	if(scanf("%u", &serv_id) < 1)
+	if (scanf("%u", &serv_id) < 1)
 		return -1;
 
 	rv = ssdp_service_foreach_found(serv_id, __foreach_ssdp_found_cb, NULL);
-	if(rv == 0) {
-		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__ );
+	if (rv == 0) {
+		printf(MAKE_GREEN"Success %s "RESET_COLOR"\n", __func__);
 		__FUNC_EXIT__;
 		return 1;
 	}
@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
 	int ret = -1;
 
 	/* Initialize required subsystems */
-#if !GLIB_CHECK_VERSION(2,35,0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
 	main_loop = g_main_loop_new(NULL, FALSE);
 
 	/* Run the main loop */
-	g_main_loop_run (main_loop);
+	g_main_loop_run(main_loop);
 
 	g_main_loop_unref(main_loop);
 

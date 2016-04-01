@@ -140,7 +140,7 @@ int dnssd_create_local_service(const char *service_type,
 		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
-	if(dnssd_service == NULL || service_type == NULL ||
+	if (dnssd_service == NULL || service_type == NULL ||
 			__dnssd_check_handle_validity(*dnssd_service) != NULL) {
 		DNSSD_LOGE("Invalid Parameter");
 		__DNSSD_LOG_FUNC_EXIT__;
@@ -510,7 +510,7 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	sd_ref = local_handle->sd_ref;
 	record_client = reg->record_ref;
 
-	if(NULL == record_client) {
+	if (NULL == record_client) {
 		DNSSD_LOGE("Invalid DNS SD Client");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
@@ -518,7 +518,7 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 
 	ret = DNSServiceRemoveRecord(sd_ref, record_client,
 			local_handle->flags);
-	if(ret < 0) {
+	if (ret < 0) {
 		DNSSD_LOGE("Failed to Remove Record for DNS Service, error[%s]",	//LCOV_EXCL_LINE
 				dnssd_error_to_string(ret));								//LCOV_EXCL_LINE
 		__DNSSD_LOG_FUNC_EXIT__;											//LCOV_EXCL_LINE
@@ -629,7 +629,7 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 			local_handle->service_type, local_handle->domain,
 			NULL, reg->port, 1, "", __dnssd_register_reply_cb,
 			NULL);
-	if(ret < 0) {
+	if (ret < 0) {
 		DNSSD_LOGE("Failed to register for dns service, error[%s]",	//LCOV_EXCL_LINE
 				dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
 		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
@@ -676,7 +676,7 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	}
 
 	sd_ref = local_handle->sd_ref;
-	if(NULL == sd_ref) {
+	if (NULL == sd_ref) {
 		DNSSD_LOGE("Invalid DNS SD Client");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
@@ -687,7 +687,7 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	if (record_client) {
 		ret = DNSServiceRemoveRecord(sd_ref, record_client,
 				local_handle->flags);
-		if(ret < 0)	//LCOV_EXCL_LINE
+		if (ret < 0)	//LCOV_EXCL_LINE
 			DNSSD_LOGE("Failed to Remove Record for DNS Service, "	//LCOV_EXCL_LINE
 					"error[%s]", dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
 		else	//LCOV_EXCL_LINE
@@ -714,7 +714,7 @@ static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 	dnssd_found_cb callback;
 	void *data;
 
-	if(user_data == NULL) {
+	if (user_data == NULL) {
 		DNSSD_LOGD("Invalid found handle");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return;
@@ -731,7 +731,7 @@ static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 			local_handle->flags);
 
 	dnssd_handle = __dnssd_check_handle_validity(found->browse_handler);
-	if(dnssd_handle == NULL) {
+	if (dnssd_handle == NULL) {
 		DNSSD_LOGD("Invalid browse handle");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return;
@@ -783,7 +783,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	char *save_str = NULL;
 	int dns_protocol = kDNSServiceProtocol_IPv4 | kDNSServiceProtocol_IPv6;
 
-	if(dnssd_handle == NULL) {
+	if (dnssd_handle == NULL) {
 		DNSSD_LOGD("Invalid browse handle");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_OUT_OF_MEMORY;
@@ -798,7 +798,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	domain = strtok_r(NULL, ".", &save_str);
 
 	local_handle = g_try_malloc0(FOUND_SIZE);
-	if(local_handle == NULL) {
+	if (local_handle == NULL) {
 		DNSSD_LOGD("g_try_malloc failed");
 		g_free(name);
 		__DNSSD_LOG_FUNC_EXIT__;
@@ -811,14 +811,14 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	local_handle->service_handler = (unsigned int)local_handle & 0xffffffff;
 	g_strlcpy(local_handle->domain, domain, sizeof(local_handle->domain));
 	local_handle->if_index = if_index;
-	local_handle->flags= flags;
-	if(dnssd_handle->service_type)
+	local_handle->flags = flags;
+	if (dnssd_handle->service_type)
 		local_handle->service_type = g_strdup(dnssd_handle->service_type);
 
 	found->browse_handler = dnssd_handle->service_handler;
 	found->service_name = g_strdup(name);
 	g_free(name);
-	if(txt_record != NULL) {
+	if (txt_record != NULL) {
 		found->txt_record = g_strdup(txt_record);
 		found->txt_len = txt_len;
 	}
@@ -836,7 +836,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	ret = DNSServiceGetAddrInfo(sd_ref, flags, if_index,
 			dns_protocol, host_name,
 			__dnssd_getaddrinfo_reply_cb, local_handle);
-	if(ret < 0) {
+	if (ret < 0) {
 		DNSSD_LOGE("Failed to GetAddrInfo, error[%s]",
 				dnssd_error_to_string(ret));
 		return ret;
@@ -891,7 +891,7 @@ static int __dnssd_resolve_dns_service(dnssd_handle_s *dnssd_handle,
 
 	ret = DNSServiceResolve(sd_ref, flags, if_index, service_name,
 			type, domain, __dnssd_resolve_reply_cb, data);
-	if(ret < 0) {
+	if (ret < 0) {
 		DNSSD_LOGE("Failed to Resolve DNS Service, error[%s]",
 				dnssd_error_to_string(ret));
 		__DNSSD_LOG_FUNC_EXIT__;
@@ -959,7 +959,7 @@ static void __dnssd_broswe_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 
 	for (list = dnssd_handle_list; list; list = list->next) {
 		dnssd_handle = (dnssd_handle_s *) list->data;
-		if(dnssd_handle == NULL)
+		if (dnssd_handle == NULL)
 			continue;
 
 		if (dnssd_handle->sd_ref == sd_ref) {
@@ -1026,7 +1026,7 @@ int dnssd_start_browsing_service(const char *service_type,
 		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
-	if(dnssd_service == NULL || service_type == NULL ||
+	if (dnssd_service == NULL || service_type == NULL ||
 			__dnssd_check_handle_validity(*dnssd_service) != NULL) {
 		DNSSD_LOGE("Invalid Parameter");
 		__DNSSD_LOG_FUNC_EXIT__;
@@ -1064,7 +1064,7 @@ int dnssd_start_browsing_service(const char *service_type,
 			local_handle->if_index, local_handle->service_type,
 			local_handle->domain, __dnssd_broswe_reply_cb,
 			NULL);
-	if(ret < 0) {
+	if (ret < 0) {
 		DNSSD_LOGE("Failed to browse for dns service, error[%s]",	//LCOV_EXCL_LINE
 				dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
 		g_free(local_handle->service_type);	//LCOV_EXCL_LINE
@@ -1093,12 +1093,12 @@ static void __dnssd_remove_found_service(gpointer data, gpointer user_data)
 	found_handle = (dnssd_handle_s *)data;
 	handler = (dnssd_service_h *)user_data;
 
-	if(found_handle->op_type != DNSSD_TYPE_FOUND)
+	if (found_handle->op_type != DNSSD_TYPE_FOUND)
 		return;
 
 	//LCOV_EXCL_START
 	found_data = GET_FOUND_DATA_P(found_handle);
-	if(found_data->browse_handler != *handler)
+	if (found_data->browse_handler != *handler)
 		return;
 
 	DNSSD_LOGD("handle [0x%x]", found_handle->service_handler);
@@ -1148,7 +1148,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 	}
 
 	sd_ref = local_handle->sd_ref;
-	if(NULL == sd_ref) {
+	if (NULL == sd_ref) {
 		DNSSD_LOGE("Invalid DNS SD Client");	//LCOV_EXCL_LINE
 		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
 		return DNSSD_ERROR_INVALID_PARAMETER;	//LCOV_EXCL_LINE
@@ -1241,16 +1241,16 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
+	if (local_handle->op_type == DNSSD_TYPE_FOUND) {
 		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
 		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE
 		*service_name = g_strdup(found->service_name);	//LCOV_EXCL_LINE
-	} else if(local_handle->op_type == DNSSD_TYPE_REGISTER) {
+	} else if (local_handle->op_type == DNSSD_TYPE_REGISTER) {
 		dnssd_register_data_s *reg = NULL;
 		reg = GET_REG_DATA_P(local_handle);
 		*service_name = g_strdup(reg->service_name);
 	} else {
-		*service_name = NULL;	
+		*service_name = NULL;
 		DNSSD_LOGD("Invalid DNS SD service");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
@@ -1292,7 +1292,7 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	if(local_handle->op_type != DNSSD_TYPE_FOUND) {
+	if (local_handle->op_type != DNSSD_TYPE_FOUND) {
 		DNSSD_LOGD("Invalid DNS SD Service");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
@@ -1346,11 +1346,11 @@ int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
-	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
+	if (local_handle->op_type == DNSSD_TYPE_FOUND) {
 		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
 		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE
 		*port = found->port;	//LCOV_EXCL_LINE
-	} else if(local_handle->op_type == DNSSD_TYPE_REGISTER) {
+	} else if (local_handle->op_type == DNSSD_TYPE_REGISTER) {
 		dnssd_register_data_s *reg = NULL;
 		reg = GET_REG_DATA_P(local_handle);
 		*port = reg->port;
@@ -1394,7 +1394,7 @@ int dnssd_service_get_all_txt_record(dnssd_service_h dnssd_service,
 		return DNSSD_ERROR_INVALID_PARAMETER;
 	}
 
-	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
+	if (local_handle->op_type == DNSSD_TYPE_FOUND) {
 
 		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
 		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE

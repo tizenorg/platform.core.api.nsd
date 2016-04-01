@@ -40,18 +40,18 @@
 		bool feature_supported = FALSE;\
 		if (!system_info_get_platform_bool(feature_name,\
 					&feature_supported)) {\
-			if(feature_supported == FALSE){\
+			if (feature_supported == FALSE) {\
 				DNSSD_LOGE("%s feature is disabled",\
 						feature_name);\
 				__DNSSD_LOG_FUNC_EXIT__;\
 				return DNSSD_ERROR_NOT_SUPPORTED;\
-			}\
+			} \
 		} else {\
 			DNSSD_LOGE("Error - Feature getting from System Info");\
 			__DNSSD_LOG_FUNC_EXIT__;\
 			return DNSSD_ERROR_OPERATION_FAILED;\
-		}\
-	} while(0)
+		} \
+	} while (0)
 
 #else
 #define CHECK_FEATURE_SUPPORTED(feature_name)

@@ -41,8 +41,7 @@ extern "C" {
  * @brief Enumeration for Network Service Discovery SSDP error code.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	SSDP_ERROR_NONE = TIZEN_ERROR_NONE,  /**< Successful */
 	SSDP_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,  /**< Out of memory */
 	SSDP_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,  /**< Invalid function parameter */
@@ -57,8 +56,7 @@ typedef enum
  * @brief Enumeration for Network Service Discovery SSDP service browse state.
  * @since_tizen 3.0
  */
-typedef enum
-{
+typedef enum {
 	SSDP_SERVICE_STATE_AVAILABLE,		/**< A new service is available */
 	SSDP_SERVICE_STATE_UNAVAILABLE,		/**< A service is not available */
 } ssdp_service_state_e;
