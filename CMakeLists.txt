@@ -78,7 +78,7 @@ FOREACH(flag ${NSD_DEPS_CFLAGS})
 ENDFOREACH(flag)
 
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall -Werror -fprofile-arcs -ftest-coverage")
 SET(CMAKE_C_FLAGS_DEBUG      "-O0 -g")
 SET(CMAKE_C_FLAGS_RELEASE    "-O2 -g")
 

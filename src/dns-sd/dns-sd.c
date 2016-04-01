@@ -42,21 +42,21 @@ static const char *dnssd_error_to_string(dnssd_error_e error)
 	case DNSSD_ERROR_NONE:
 		return "DNSSD_ERROR_NONE";
 	case DNSSD_ERROR_OUT_OF_MEMORY:
-		return "DNSSD_ERROR_OUT_OF_MEMORY";
+		return "DNSSD_ERROR_OUT_OF_MEMORY";		//LCOV_EXCL_LINE
 	case DNSSD_ERROR_INVALID_PARAMETER:
-		return "DNSSD_ERROR_INVALID_PARAMETER";
+		return "DNSSD_ERROR_INVALID_PARAMETER"; //LCOV_EXCL_LINE
 	case DNSSD_ERROR_NOT_SUPPORTED:
-		return "DNSSD_ERROR_NOT_SUPPORTED";
+		return "DNSSD_ERROR_NOT_SUPPORTED";		//LCOV_EXCL_LINE
 	case DNSSD_ERROR_NOT_INITIALIZED:
-		return "DNSSD_ERROR_NOT_INITIALIZED";
+		return "DNSSD_ERROR_NOT_INITIALIZED";	//LCOV_EXCL_LINE
 	case DNSSD_ERROR_ALREADY_REGISTERED:
-		return "DNSSD_ERROR_ALREADY_REGISTERED";
+		return "DNSSD_ERROR_ALREADY_REGISTERED";//LCOV_EXCL_LINE
 	case DNSSD_ERROR_NAME_CONFLICT:
-		return "DNSSD_ERROR_NAME_CONFLICT";
+		return "DNSSD_ERROR_NAME_CONFLICT";		//LCOV_EXCL_LINE
 	case DNSSD_ERROR_SERVICE_NOT_RUNNING:
-		return "DNSSD_ERROR_SERVICE_NOT_RUNNING";
+		return "DNSSD_ERROR_SERVICE_NOT_RUNNING";//LCOV_EXCL_LINE
 	case DNSSD_ERROR_OPERATION_FAILED:
-		return "DNSSD_ERROR_OPERATION_FAILED";
+		return "DNSSD_ERROR_OPERATION_FAILED";	//LCOV_EXCL_LINE
 	default:
 		return "UNSUPPORTED_ERROR";
 	}
@@ -74,9 +74,9 @@ int dnssd_initialize(void)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == true) {
-		DNSSD_LOGE("Already initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_OPERATION;
+		DNSSD_LOGE("Already initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;				//LCOV_EXCL_LINE
+		return DNSSD_ERROR_INVALID_OPERATION;	//LCOV_EXCL_LINE
 	}
 
 	g_is_init = true;
@@ -135,9 +135,9 @@ int dnssd_create_local_service(const char *service_type,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;			//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if(dnssd_service == NULL || service_type == NULL ||
@@ -149,9 +149,9 @@ int dnssd_create_local_service(const char *service_type,
 
 	local_handle = (dnssd_handle_s *)g_try_malloc0(REG_SIZE);
 	if (local_handle == NULL) {
-		DNSSD_LOGE("Failed to Allocate Memory");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_OUT_OF_MEMORY;
+		DNSSD_LOGE("Failed to Allocate Memory");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;					//LCOV_EXCL_LINE
+		return DNSSD_ERROR_OUT_OF_MEMORY;			//LCOV_EXCL_LINE
 	}
 
 	handler = (unsigned int)local_handle & 0xffffffff;
@@ -180,9 +180,9 @@ int dnssd_destroy_local_service(dnssd_service_h dnssd_service)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;			//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(dnssd_service);
@@ -221,9 +221,9 @@ int dnssd_service_set_name(dnssd_service_h local_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;			//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (service_name == NULL) {
@@ -264,9 +264,9 @@ int dnssd_service_set_port(dnssd_service_h local_service, int port)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");			//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;				//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;		//LCOV_EXCL_LINE
 	}
 
 	if (port < 0 || port > 65535) {
@@ -283,9 +283,9 @@ int dnssd_service_set_port(dnssd_service_h local_service, int port)
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
-		DNSSD_LOGD("DNSSD service is not a local service");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_SERVICE_NOT_FOUND;
+		DNSSD_LOGD("DNSSD service is not a local service");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;							//LCOV_EXCL_LINE
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;				//LCOV_EXCL_LINE
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
@@ -309,9 +309,9 @@ int dnssd_service_add_txt_record(dnssd_service_h local_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;			//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(local_service);
@@ -334,7 +334,7 @@ int dnssd_service_add_txt_record(dnssd_service_h local_service,
 	}
 
 	if (length == 0 || value == NULL)
-		DNSSD_LOGD("Value size is 0 or NULL value passed");
+		DNSSD_LOGD("Value size is 0 or NULL value passed");	//LCOV_EXCL_LINE
 
 	reg = GET_REG_DATA_P(local_handle);
 	txt_record = &(reg->txt_ref);
@@ -343,8 +343,8 @@ int dnssd_service_add_txt_record(dnssd_service_h local_service,
 
 	ret = TXTRecordSetValue(txt_record, key, length, value);
 	if (ret != DNSSD_ERROR_NONE) {
-		DNSSD_LOGE("Failed to add value to key, error[%s]",
-				dnssd_error_to_string(ret));
+		DNSSD_LOGE("Failed to add value to key, error[%s]",	//LCOV_EXCL_LINE
+				dnssd_error_to_string(ret));				//LCOV_EXCL_LINE
 		__DNSSD_LOG_FUNC_EXIT__;
 		return ret;
 	} else {
@@ -368,9 +368,9 @@ int dnssd_service_remove_txt_record(dnssd_service_h local_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");			//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;				//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;		//LCOV_EXCL_LINE
 	}
 
 	if (key == NULL) {
@@ -430,9 +430,9 @@ int dnssd_service_set_record(dnssd_service_h local_service, unsigned short type,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");		//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;			//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(local_service);
@@ -458,15 +458,15 @@ int dnssd_service_set_record(dnssd_service_h local_service, unsigned short type,
 		ret = DNSServiceAddRecord(sd_ref, &(reg->record_ref),
 				local_handle->flags, type, length, data, 0);
 	} else {
-		DNSSD_LOGD("Updating DNS Service Record");
-		ret = DNSServiceUpdateRecord(sd_ref, record_client,
-				local_handle->flags, length, data, 0);
+		DNSSD_LOGD("Updating DNS Service Record");			//LCOV_EXCL_LINE
+		ret = DNSServiceUpdateRecord(sd_ref, record_client,	//LCOV_EXCL_LINE
+				local_handle->flags, length, data, 0);		//LCOV_EXCL_LINE
 	}
 	if (ret < 0) {
-		DNSSD_LOGE("Failed to Add Record for DNS Service, error[%s]",
-				dnssd_error_to_string(ret));
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_OPERATION_FAILED;
+		DNSSD_LOGE("Failed to Add Record for DNS Service, error[%s]",	//LCOV_EXCL_LINE
+				dnssd_error_to_string(ret));							//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;										//LCOV_EXCL_LINE
+		return DNSSD_ERROR_OPERATION_FAILED;							//LCOV_EXCL_LINE
 	}
 
 	DNSSD_LOGD("Successfully added record for DNS Service");
@@ -488,9 +488,9 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");			//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;				//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;		//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(local_service);
@@ -519,10 +519,10 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	ret = DNSServiceRemoveRecord(sd_ref, record_client,
 			local_handle->flags);
 	if(ret < 0) {
-		DNSSD_LOGE("Failed to Remove Record for DNS Service, error[%s]",
-				dnssd_error_to_string(ret));
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_OPERATION_FAILED;
+		DNSSD_LOGE("Failed to Remove Record for DNS Service, error[%s]",	//LCOV_EXCL_LINE
+				dnssd_error_to_string(ret));								//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;											//LCOV_EXCL_LINE
+		return DNSSD_ERROR_OPERATION_FAILED;	//LCOV_EXCL_LINE
 	}
 
 	reg->record_ref = NULL;
@@ -546,9 +546,9 @@ static void __dnssd_register_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 	DNSSD_LOGD("Received Registration Reply");
 
 	if (error_code != DNSSD_ERROR_NONE)
-		DNSSD_LOGE("Failed to register, error code %d -> %s",
-				error_code,
-				dnssd_error_to_string(error_code));
+		DNSSD_LOGE("Failed to register, error code %d -> %s",	//LCOV_EXCL_LINE
+				error_code,	//LCOV_EXCL_LINE
+				dnssd_error_to_string(error_code));	//LCOV_EXCL_LINE
 
 	for (list = dnssd_handle_list; list; list = list->next) {
 		dnssd_handle = (dnssd_handle_s *) list->data;
@@ -588,9 +588,9 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(local_service);
@@ -607,17 +607,17 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 	}
 
 	if (local_handle->op_type != DNSSD_TYPE_REGISTER) {
-		DNSSD_LOGD("DNSSD service is not a local service");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_SERVICE_NOT_FOUND;
+		DNSSD_LOGD("DNSSD service is not a local service");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_SERVICE_NOT_FOUND;	//LCOV_EXCL_LINE
 	}
 
 	reg = GET_REG_DATA_P(local_handle);
 	sd_ref = &(local_handle->sd_ref);
 
 	if (reg->service_name == NULL) {
-		DNSSD_LOGD("No Service Name Provided");
-		reg->service_name = g_strdup("");
+		DNSSD_LOGD("No Service Name Provided");	//LCOV_EXCL_LINE
+		reg->service_name = g_strdup("");	//LCOV_EXCL_LINE
 	} else
 		DNSSD_LOGD("Service Name is %s", reg->service_name);
 
@@ -630,10 +630,10 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 			NULL, reg->port, 1, "", __dnssd_register_reply_cb,
 			NULL);
 	if(ret < 0) {
-		DNSSD_LOGE("Failed to register for dns service, error[%s]",
-				dnssd_error_to_string(ret));
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_OPERATION_FAILED;
+		DNSSD_LOGE("Failed to register for dns service, error[%s]",	//LCOV_EXCL_LINE
+				dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_OPERATION_FAILED;	//LCOV_EXCL_LINE
 	}
 
 	reg->callback = register_cb;
@@ -657,9 +657,9 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(local_service);
@@ -687,11 +687,11 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	if (record_client) {
 		ret = DNSServiceRemoveRecord(sd_ref, record_client,
 				local_handle->flags);
-		if(ret < 0)
-			DNSSD_LOGE("Failed to Remove Record for DNS Service, "
-					"error[%s]", dnssd_error_to_string(ret));
-		else
-			reg->record_ref = NULL;
+		if(ret < 0)	//LCOV_EXCL_LINE
+			DNSSD_LOGE("Failed to Remove Record for DNS Service, "	//LCOV_EXCL_LINE
+					"error[%s]", dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
+		else	//LCOV_EXCL_LINE
+			reg->record_ref = NULL;	//LCOV_EXCL_LINE
 	}
 
 	DNSServiceRefDeallocate(sd_ref);
@@ -700,6 +700,7 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 	return DNSSD_ERROR_NONE;
 }
 
+//LCOV_EXCL_START
 static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 		unsigned int flags, unsigned int if_index,
 		DNSServiceErrorType error_code, const char *host_name,
@@ -765,7 +766,9 @@ static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 	}
 
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 		unsigned int if_index, const char *host_name,
 		const char *fullname, const char *txt_record,
@@ -845,7 +848,9 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 
 	return DNSSD_ERROR_NONE;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static void __dnssd_resolve_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 		unsigned int if_index, DNSServiceErrorType error_code,
 		const char *fullname, const char *host_name,
@@ -859,7 +864,9 @@ static void __dnssd_resolve_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 			host_name, fullname, (const char *) txt_record,
 			txt_len, port);
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static int __dnssd_resolve_dns_service(dnssd_handle_s *dnssd_handle,
 		unsigned int flags, unsigned int if_index,
 		const char *service_name, const char *type, const char *domain)
@@ -898,7 +905,9 @@ static int __dnssd_resolve_dns_service(dnssd_handle_s *dnssd_handle,
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static dnssd_handle_s *__dnssd_get_found_handle(dnssd_service_h browse_service,
 		const char *service_name)
 {
@@ -926,7 +935,9 @@ static dnssd_handle_s *__dnssd_get_found_handle(dnssd_service_h browse_service,
 	__DNSSD_LOG_FUNC_EXIT__;
 	return NULL;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static void __dnssd_broswe_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 		unsigned int if_index, DNSServiceErrorType error_code,
 		const char *service_name, const char *service_type,
@@ -994,6 +1005,7 @@ static void __dnssd_broswe_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 	}
 	__DNSSD_LOG_FUNC_EXIT__;
 }
+//LCOV_EXCL_STOP
 
 int dnssd_start_browsing_service(const char *service_type,
 		dnssd_browser_h *dnssd_service, dnssd_found_cb found_cb,
@@ -1009,9 +1021,9 @@ int dnssd_start_browsing_service(const char *service_type,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if(dnssd_service == NULL || service_type == NULL ||
@@ -1029,9 +1041,9 @@ int dnssd_start_browsing_service(const char *service_type,
 
 	local_handle = (dnssd_handle_s *)g_try_malloc0(BROWSE_SIZE);
 	if (local_handle == NULL) {
-		DNSSD_LOGE("Failed to Allocate Memory");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_OUT_OF_MEMORY;
+		DNSSD_LOGE("Failed to Allocate Memory");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
 	handler = (unsigned int)local_handle & 0xffffffff;
@@ -1053,12 +1065,12 @@ int dnssd_start_browsing_service(const char *service_type,
 			local_handle->domain, __dnssd_broswe_reply_cb,
 			NULL);
 	if(ret < 0) {
-		DNSSD_LOGE("Failed to browse for dns service, error[%s]",
-				dnssd_error_to_string(ret));
-		g_free(local_handle->service_type);
-		g_free(local_handle);
-		__DNSSD_LOG_FUNC_EXIT__;
-		return ret;
+		DNSSD_LOGE("Failed to browse for dns service, error[%s]",	//LCOV_EXCL_LINE
+				dnssd_error_to_string(ret));	//LCOV_EXCL_LINE
+		g_free(local_handle->service_type);	//LCOV_EXCL_LINE
+		g_free(local_handle);	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return ret;	//LCOV_EXCL_LINE
 	}
 
 	browse->callback = found_cb;
@@ -1084,6 +1096,7 @@ static void __dnssd_remove_found_service(gpointer data, gpointer user_data)
 	if(found_handle->op_type != DNSSD_TYPE_FOUND)
 		return;
 
+	//LCOV_EXCL_START
 	found_data = GET_FOUND_DATA_P(found_handle);
 	if(found_data->browse_handler != *handler)
 		return;
@@ -1102,6 +1115,7 @@ static void __dnssd_remove_found_service(gpointer data, gpointer user_data)
 
 	__DNSSD_LOG_FUNC_EXIT__;
 	return;
+	//LCOV_EXCL_STOP
 }
 
 int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
@@ -1115,9 +1129,9 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(dnssd_service);
@@ -1135,9 +1149,9 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 
 	sd_ref = local_handle->sd_ref;
 	if(NULL == sd_ref) {
-		DNSSD_LOGE("Invalid DNS SD Client");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_INVALID_PARAMETER;
+		DNSSD_LOGE("Invalid DNS SD Client");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_INVALID_PARAMETER;	//LCOV_EXCL_LINE
 	}
 
 	g_slist_foreach(dnssd_handle_list, (GFunc)__dnssd_remove_found_service,
@@ -1145,6 +1159,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 
 	list = resolve_handle_list;
 	while (list) {
+		//LCOV_EXCL_START
 		resolve_data = list->data;
 		list = list->next;
 
@@ -1156,6 +1171,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 
 			g_free(resolve_data);
 		}
+		//LCOV_EXCL_STOP
 	}
 
 	DNSServiceRefDeallocate(sd_ref);
@@ -1174,9 +1190,9 @@ int dnssd_service_get_type(dnssd_service_h dnssd_service, char **service_type)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (service_type == NULL) {
@@ -1207,9 +1223,9 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (service_name == NULL) {
@@ -1226,15 +1242,15 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 	}
 
 	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
-		dnssd_found_data_s *found = NULL;
-		found = GET_FOUND_DATA_P(local_handle);
-		*service_name = g_strdup(found->service_name);
+		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
+		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE
+		*service_name = g_strdup(found->service_name);	//LCOV_EXCL_LINE
 	} else if(local_handle->op_type == DNSSD_TYPE_REGISTER) {
 		dnssd_register_data_s *reg = NULL;
 		reg = GET_REG_DATA_P(local_handle);
 		*service_name = g_strdup(reg->service_name);
 	} else {
-		*service_name = NULL;
+		*service_name = NULL;	
 		DNSSD_LOGD("Invalid DNS SD service");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
@@ -1246,7 +1262,7 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 	return DNSSD_ERROR_NONE;
 }
 
-
+//LCOV_EXCL_START
 int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 		char **ip_v6_address)
 {
@@ -1302,6 +1318,7 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
 }
+//LCOV_EXCL_STOP
 
 int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 {
@@ -1311,9 +1328,9 @@ int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (port == NULL) {
@@ -1330,9 +1347,9 @@ int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 	}
 
 	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
-		dnssd_found_data_s *found = NULL;
-		found = GET_FOUND_DATA_P(local_handle);
-		*port = found->port;
+		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
+		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE
+		*port = found->port;	//LCOV_EXCL_LINE
 	} else if(local_handle->op_type == DNSSD_TYPE_REGISTER) {
 		dnssd_register_data_s *reg = NULL;
 		reg = GET_REG_DATA_P(local_handle);
@@ -1359,9 +1376,9 @@ int dnssd_service_get_all_txt_record(dnssd_service_h dnssd_service,
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
 	if (__dnssd_is_init() == false) {
-		DNSSD_LOGE("Not initialized");
-		__DNSSD_LOG_FUNC_EXIT__;
-		return DNSSD_ERROR_NOT_INITIALIZED;
+		DNSSD_LOGE("Not initialized");	//LCOV_EXCL_LINE
+		__DNSSD_LOG_FUNC_EXIT__;	//LCOV_EXCL_LINE
+		return DNSSD_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	local_handle = __dnssd_check_handle_validity(dnssd_service);
@@ -1379,11 +1396,11 @@ int dnssd_service_get_all_txt_record(dnssd_service_h dnssd_service,
 
 	if(local_handle->op_type == DNSSD_TYPE_FOUND) {
 
-		dnssd_found_data_s *found = NULL;
-		found = GET_FOUND_DATA_P(local_handle);
+		dnssd_found_data_s *found = NULL;	//LCOV_EXCL_LINE
+		found = GET_FOUND_DATA_P(local_handle);	//LCOV_EXCL_LINE
 
-		*value = g_strdup(found->txt_record);
-		*length = found->txt_len;
+		*value = g_strdup(found->txt_record);	//LCOV_EXCL_LINE
+		*length = found->txt_len;	//LCOV_EXCL_LINE
 	} else {
 
 		dnssd_register_data_s *reg = NULL;

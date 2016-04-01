@@ -90,6 +90,7 @@ static __thread GHashTable *g_found_ssdp_services = NULL;
 /**
  * free a local service
  */
+//LCOV_EXCL_START
 static void __g_list_free_service(gpointer data, gpointer user_data)
 {
 	ssdp_service_s *service = NULL;
@@ -97,13 +98,6 @@ static void __g_list_free_service(gpointer data, gpointer user_data)
 	service = (ssdp_service_s *)data;
 	if(service == NULL)
 		return;
-	/* moon
-	   if(service->resource_group != NULL && service->resource_id != 0)
-	   gssdp_resource_group_remove_resource(service->resource_group, service->resource_id);
-
-	   if(service->resource_browser != NULL)
-	   g_object_unref (service->resource_browser);
-	 */
 	if(service->origin == SSDP_SERVICE_STATE_NOT_REGISTERED)
 		SSDP_LOGE("Free not registered service");
 	else if(service->origin == SSDP_SERVICE_STATE_REGISTERED)
@@ -118,10 +112,12 @@ static void __g_list_free_service(gpointer data, gpointer user_data)
 	g_free(service->url);
 	g_free(service);
 }
+//LCOV_EXCL_STOP
 
 /**
  * free a remote service
  */
+//LCOV_EXCL_START
 static void __g_hash_free_service(gpointer key, gpointer value, 
 							gpointer user_data)
 {
@@ -149,10 +145,12 @@ static void __g_hash_free_service(gpointer key, gpointer value,
 	g_free(service->url);
 	g_free(service);
 }
+//LCOV_EXCL_STOP
 
 /**
  * remove remove services found by request of a browser (browser_id is passed to by user_data)
  */
+//LCOV_EXCL_START
 static void __g_hash_remove_related_services(gpointer key, gpointer value,
 							gpointer user_data)
 {
@@ -173,6 +171,7 @@ static void __g_hash_remove_related_services(gpointer key, gpointer value,
 	g_free(service->url);
 	g_free(service);
 }
+//LCOV_EXCL_STOP
 
 static ssdp_service_s *__ssdp_find_local_service(GList *services, 
 											unsigned int handler)
@@ -234,6 +233,7 @@ static ssdp_service_s *__ssdp_find_local_service_with_url(GList *services,
 	return service;
 }
 
+//LCOV_EXCL_START
 static void __g_hash_find_remote_service(gpointer key, gpointer value, 
 											gpointer user_data)
 {
@@ -253,6 +253,7 @@ static void __g_hash_find_remote_service(gpointer key, gpointer value,
 
 	return;
 }
+//LCOV_EXCL_STOP
 
 static ssdp_service_s *__ssdp_find_remote_service(GHashTable *services, 
 													unsigned int handler)
@@ -267,6 +268,7 @@ static ssdp_service_s *__ssdp_find_remote_service(GHashTable *services,
 	return user_data.service;
 }
 
+//LCOV_EXCL_START
 static void
 __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 				const char *usn, GList *urls, gpointer user_data)
@@ -343,7 +345,9 @@ __ssdp_res_available_cb (GSSDPResourceBrowser *resource_browser,
 	return;
 
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static void
 __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 		const char *usn, GList *urls, gpointer user_data)
@@ -382,6 +386,7 @@ __ssdp_res_unavailable_cb (GSSDPResourceBrowser *resource_browser,
 	__SSDP_LOG_FUNC_EXIT__;
 	return;
 }
+//LCOV_EXCL_STOP
 
 int ssdp_initialize()
 {
@@ -401,7 +406,7 @@ int ssdp_initialize()
 	if (gerror) {
 		SSDP_LOGE("Error creating the GSSDP client: %s\n",
 				gerror->message);
-		g_error_free(gerror);
+		g_error_free(gerror); //LCOV_EXCL_LINE
 		__SSDP_LOG_FUNC_EXIT__;
 		return SSDP_ERROR_OPERATION_FAILED;
 	}
@@ -458,7 +463,7 @@ int ssdp_create_local_service(const char *target, ssdp_service_h *ssdp_service)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (ssdp_service == NULL) {
@@ -471,15 +476,15 @@ int ssdp_create_local_service(const char *target, ssdp_service_h *ssdp_service)
 	if (!service) {
 		SSDP_LOGE("Failed to get memory for gssdp service structure");
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OUT_OF_MEMORY;
+		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
 	service->target = g_strndup(target, strlen(target));
 	if (!service->target) {
 		SSDP_LOGE("Failed to get memory for gssdp service type");
-		g_free(service);
+		g_free(service);	//LCOV_EXCL_LINE
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OUT_OF_MEMORY;
+		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
 	*ssdp_service = (unsigned int)service & 0xFFFFFFFF;
@@ -509,7 +514,7 @@ int ssdp_destroy_local_service(ssdp_service_h ssdp_service)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
@@ -517,10 +522,10 @@ int ssdp_destroy_local_service(ssdp_service_h ssdp_service)
 		return SSDP_ERROR_SERVICE_NOT_FOUND;
 
 	if (service->resource_group != NULL)
-		service->resource_group = NULL;
+		service->resource_group = NULL;	//LCOV_EXCL_LINE
 
 	if (service->resource_browser != NULL)
-		g_object_unref(service->resource_browser);
+		g_object_unref(service->resource_browser);	//LCOV_EXCL_LINE
 
 	g_ssdp_local_services = g_list_remove(g_ssdp_local_services, service);
 	g_free(service->target);
@@ -549,7 +554,7 @@ int ssdp_service_set_usn(ssdp_service_h local_service, const char* usn)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
@@ -593,7 +598,7 @@ int ssdp_service_set_url(ssdp_service_h local_service, const char *url)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
@@ -635,7 +640,7 @@ int ssdp_service_get_target(ssdp_service_h ssdp_service, char **target)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
@@ -651,9 +656,9 @@ int ssdp_service_get_target(ssdp_service_h ssdp_service, char **target)
 	*target = g_strndup(service->target, strlen(service->target));
 	if (!target) {
 		SSDP_LOGE("Failed to get memory for gssdp service type");
-		g_free(target);
+		g_free(target);	//LCOV_EXCL_LINE
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OUT_OF_MEMORY;
+		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 	
 	__SSDP_LOG_FUNC_EXIT__;
@@ -676,7 +681,7 @@ int ssdp_service_get_usn(ssdp_service_h ssdp_service, char **usn)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
@@ -692,9 +697,9 @@ int ssdp_service_get_usn(ssdp_service_h ssdp_service, char **usn)
 	*usn = g_strndup(service->usn, strlen(service->usn));
 	if (!usn) {
 		SSDP_LOGE("Failed to get memory for gssdp service type");
-		g_free(usn);
+		g_free(usn);	//LCOV_EXCL_LINE
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OUT_OF_MEMORY;
+		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
 	__SSDP_LOG_FUNC_EXIT__;
@@ -717,7 +722,7 @@ int ssdp_service_get_url(ssdp_service_h ssdp_service, char **url)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, ssdp_service);
@@ -733,9 +738,9 @@ int ssdp_service_get_url(ssdp_service_h ssdp_service, char **url)
 	*url = g_strndup(service->url, strlen(service->url));
 	if (!url) {
 		SSDP_LOGE("Failed to get memory for gssdp service type");
-		g_free(url);
+		g_free(url);	//LCOV_EXCL_LINE
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_OUT_OF_MEMORY;
+		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
 	__SSDP_LOG_FUNC_EXIT__;
@@ -759,7 +764,7 @@ int ssdp_register_local_service(ssdp_service_h local_service,
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
@@ -831,7 +836,7 @@ int ssdp_deregister_local_service(ssdp_service_h local_service)
 
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	service = __ssdp_find_local_service(g_ssdp_local_services, local_service);
@@ -870,7 +875,7 @@ int ssdp_start_browsing_service(const char* target, ssdp_browser_h* ssdp_browser
 	if (!g_is_gssdp_init) {
 		SSDP_LOGE("gssdp not initialized");
 		__SSDP_LOG_FUNC_EXIT__;
-		return SSDP_ERROR_NOT_INITIALIZED;
+		return SSDP_ERROR_NOT_INITIALIZED;	//LCOV_EXCL_LINE
 	}
 
 	if (ssdp_browser == NULL) {

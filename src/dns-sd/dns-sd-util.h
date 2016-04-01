@@ -24,13 +24,13 @@
 #undef LOG_TAG
 #define LOG_TAG "CAPI_NETWORK_DNSSD"
 
-#define DNSSD_LOGD(format, args...) LOGD(format, ##args)
-#define DNSSD_LOGI(format, args...) LOGI(format, ##args)
-#define DNSSD_LOGW(format, args...) LOGW(format, ##args)
-#define DNSSD_LOGE(format, args...) LOGE(format, ##args)
+#define DNSSD_LOGD(format, args...) LOGD(format, ##args) //LCOV_EXCL_LINE
+#define DNSSD_LOGI(format, args...) LOGI(format, ##args) //LCOV_EXCL_LINE
+#define DNSSD_LOGW(format, args...) LOGW(format, ##args) //LCOV_EXCL_LINE
+#define DNSSD_LOGE(format, args...) LOGE(format, ##args) //LCOV_EXCL_LINE
 
-#define __DNSSD_LOG_FUNC_ENTER__ LOGD("Enter")
-#define __DNSSD_LOG_FUNC_EXIT__ LOGD("Quit")
+#define __DNSSD_LOG_FUNC_ENTER__ LOGD("Enter") //LCOV_EXCL_LINE
+#define __DNSSD_LOG_FUNC_EXIT__ LOGD("Quit") //LCOV_EXCL_LINE
 
 #define NETWORK_SERVICE_DISCOVERY_FEATURE	"http://tizen.org/feature/network.service_discovery.dnssd"
 

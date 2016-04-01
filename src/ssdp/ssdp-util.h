@@ -24,13 +24,13 @@
 #undef LOG_TAG
 #define LOG_TAG "CAPI_NETWORK_SSDP"
 
-#define SSDP_LOGD(format, args...) LOGD(format, ##args)
-#define SSDP_LOGI(format, args...) LOGI(format, ##args)
-#define SSDP_LOGW(format, args...) LOGW(format, ##args)
-#define SSDP_LOGE(format, args...) LOGE(format, ##args)
+#define SSDP_LOGD(format, args...) LOGD(format, ##args) //LCOV_EXCL_LINE
+#define SSDP_LOGI(format, args...) LOGI(format, ##args) //LCOV_EXCL_LINE
+#define SSDP_LOGW(format, args...) LOGW(format, ##args) //LCOV_EXCL_LINE
+#define SSDP_LOGE(format, args...) LOGE(format, ##args) //LCOV_EXCL_LINE
 
-#define __SSDP_LOG_FUNC_ENTER__ LOGD("Enter")
-#define __SSDP_LOG_FUNC_EXIT__ LOGD("Quit")
+#define __SSDP_LOG_FUNC_ENTER__ LOGD("Enter") //LCOV_EXCL_LINE
+#define __SSDP_LOG_FUNC_EXIT__ LOGD("Quit") //LCOV_EXCL_LINE
 
 #else /* USE_DLOG */
 
