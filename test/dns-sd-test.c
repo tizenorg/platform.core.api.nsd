@@ -528,7 +528,7 @@ static void MenuScreen()
 	printf("|_____________MENU-SCREEN___________|\n");
 	printf("| 0 - EXIT                          |\n");
 	printf("| 1 - Initialize DNS SD             |\n");
-	printf("| 2 - De-Initialize DNS SD             |\n");
+	printf("| 2 - De-Initialize DNS SD          |\n");
 	printf("| 3 - DNS SD Create Service         |\n");
 	printf("| 4 - DNS SD Destroy Service        |\n");
 	printf("| 5 - Register DNS Service          |\n");
