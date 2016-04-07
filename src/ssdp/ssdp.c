@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 /*****************************************************************************
  * System headers
@@ -316,7 +317,7 @@ __ssdp_res_available_cb(GSSDPResourceBrowser *resource_browser,
 
 	found_service->usn = g_strdup(usn);
 	found_service->url = temp_url;
-	found_service->service_handler = (unsigned int)found_service & 0xffffffff;
+	found_service->service_handler = (uintptr_t)found_service & 0xffffffff;
 	found_service->browser_id = browser->service_handler;
 	found_service->origin = SSDP_SERVICE_STATE_FOUND;
 
@@ -477,7 +478,7 @@ int ssdp_create_local_service(const char *target, ssdp_service_h *ssdp_service)
 		return SSDP_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
-	*ssdp_service = (unsigned int)service & 0xFFFFFFFF;
+	*ssdp_service = (uintptr_t)service & 0xFFFFFFFF;
 	SSDP_LOGD("Create handler for service [%u]", *ssdp_service);
 	service->service_handler = *ssdp_service;
 	service->origin = SSDP_SERVICE_STATE_NOT_REGISTERED;
@@ -906,7 +907,7 @@ GLIST_ITER_END()
 		}
 
 		/* Create browser handle */
-		*ssdp_browser = (unsigned int)browser & 0xFFFFFFFF;
+		*ssdp_browser = (uintptr_t)browser & 0xFFFFFFFF;
 		SSDP_LOGD("Create handler for browser [%u]", *ssdp_browser);
 		browser->service_handler = *ssdp_browser;
 
@@ -978,7 +979,7 @@ int ssdp_stop_browsing_service(ssdp_browser_h ssdp_browser)
 
 	g_hash_table_foreach(g_found_ssdp_services,
 			(GHFunc)__g_hash_remove_related_services,
-			(gpointer)browser->service_handler);
+			(gpointer)(uintptr_t)browser->service_handler);
 
 	g_free(browser->target);
 	g_free(browser);

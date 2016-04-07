@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <dns_sd.h>
@@ -333,7 +334,7 @@ int dnssd_create_local_service(const char *service_type,
 		return DNSSD_ERROR_OUT_OF_MEMORY;			//LCOV_EXCL_LINE
 	}
 
-	handler = (unsigned int)local_handle & 0xffffffff;
+	handler = (uintptr_t)local_handle & 0xffffffff;
 	*dnssd_service = handler;
 	local_handle->service_handler = handler;
 	local_handle->op_type = DNSSD_TYPE_REGISTER;
@@ -987,7 +988,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	found = GET_FOUND_DATA_P(local_handle);
 
 	local_handle->op_type = DNSSD_TYPE_FOUND;
-	local_handle->service_handler = (unsigned int)local_handle & 0xffffffff;
+	local_handle->service_handler = (uintptr_t)local_handle & 0xffffffff;
 	g_strlcpy(local_handle->domain, domain, sizeof(local_handle->domain));
 	local_handle->if_index = if_index;
 	local_handle->flags = flags;
@@ -1225,7 +1226,7 @@ int dnssd_start_browsing_service(const char *service_type,
 		return DNSSD_ERROR_OUT_OF_MEMORY;	//LCOV_EXCL_LINE
 	}
 
-	handler = (unsigned int)local_handle & 0xffffffff;
+	handler = (uintptr_t)local_handle & 0xffffffff;
 	*dnssd_service = handler;
 	local_handle->service_handler = handler;
 	local_handle->op_type = DNSSD_TYPE_BROWSE;
