@@ -17,6 +17,7 @@
 #include <net/if.h>
 #include <dlog.h>
 #include <glib.h>
+#include <gio/gio.h>
 #include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
@@ -67,9 +68,176 @@ static bool __dnssd_is_init(void)
 	return g_is_init;
 }
 
+static int __dnssd_ref_mdns_dbus(void)
+{
+	GDBusConnection *netconfig_bus = NULL;
+	GError *g_error = NULL;
+
+	DNSSD_LOGD("Request to increase ref count for mdnsd");
+
+#if !GLIB_CHECK_VERSION(2,36,0)
+	g_type_init();
+#endif
+	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
+	if (netconfig_bus == NULL) {
+		if(g_error != NULL) {
+			DNSSD_LOGE("Couldn't connect to system bus "
+					"error [%d: %s]", g_error->code, g_error->message);
+			g_error_free(g_error);
+		}
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_dbus_connection_call_sync(netconfig_bus,
+			NETCONFIG_SERVICE,
+			NETCONFIG_NETWORK_PATH,
+			NETCONFIG_NETWORK_INTERFACE,
+			NETCONFIG_NETWORK_REFMDNS,
+			NULL,
+			NULL,
+			G_DBUS_CALL_FLAGS_NONE,
+			DBUS_REPLY_TIMEOUT,
+			NULL,
+			&g_error);
+
+	if(g_error != NULL) {
+		DNSSD_LOGE("g_dbus_connection_call failed. "
+				"error [%d: %s]", g_error->code, g_error->message);
+		g_error_free(g_error);
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_object_unref(netconfig_bus);
+
+	return DNSSD_ERROR_NONE;
+
+}
+
+static int __dnssd_unref_mdns_dbus(void)
+{
+	GDBusConnection *netconfig_bus = NULL;
+	GError *g_error = NULL;
+
+	DNSSD_LOGD("Request to decrease ref count for mdnsd");
+#if !GLIB_CHECK_VERSION(2,36,0)
+	g_type_init();
+#endif
+	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
+	if (netconfig_bus == NULL) {
+		if(g_error != NULL) {
+			DNSSD_LOGE("Couldn't connect to system bus "
+					"error [%d: %s]", g_error->code, g_error->message);
+			g_error_free(g_error);
+		}
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_dbus_connection_call_sync(netconfig_bus,
+			NETCONFIG_SERVICE,
+			NETCONFIG_NETWORK_PATH,
+			NETCONFIG_NETWORK_INTERFACE,
+			NETCONFIG_NETWORK_UNREFMDNS,
+			NULL,
+			NULL,
+			G_DBUS_CALL_FLAGS_NONE,
+			DBUS_REPLY_TIMEOUT,
+			NULL,
+			&g_error);
+
+	if(g_error != NULL) {
+		DNSSD_LOGE("g_dbus_connection_call failed. "
+				"error [%d: %s]", g_error->code, g_error->message);
+		g_error_free(g_error);
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_object_unref(netconfig_bus);
+
+	return DNSSD_ERROR_NONE;
+
+}
+
+static int __dnssd_launch_mdns_dbus(void)
+{
+	GDBusConnection *netconfig_bus = NULL;
+	GError *g_error = NULL;
+
+#if !GLIB_CHECK_VERSION(2,36,0)
+	g_type_init();
+#endif
+	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
+	if (netconfig_bus == NULL) {
+		if(g_error != NULL) {
+			DNSSD_LOGE("Couldn't connect to system bus "
+					"error [%d: %s]", g_error->code, g_error->message);
+			g_error_free(g_error);
+		}
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_dbus_connection_call_sync(netconfig_bus,
+			NETCONFIG_SERVICE,
+			NETCONFIG_NETWORK_PATH,
+			NETCONFIG_NETWORK_INTERFACE,
+			NETCONFIG_NETWORK_LAUNCHMDNS,
+			NULL,
+			NULL,
+			G_DBUS_CALL_FLAGS_NONE,
+			DBUS_REPLY_TIMEOUT,
+			NULL,
+			&g_error);
+
+	if(g_error != NULL) {
+		DNSSD_LOGE("g_dbus_connection_call_sync() failed. "
+				"error [%d: %s]", g_error->code, g_error->message);
+		g_error_free(g_error);
+		return DNSSD_ERROR_OPERATION_FAILED;
+	}
+
+	g_object_unref(netconfig_bus);
+
+	DNSSD_LOGD("Successfully launched mdnsresponder");
+	return DNSSD_ERROR_NONE;
+}
+
+static int __dnssd_launch_mdns()
+{
+	int res = DNSSD_ERROR_NONE;
+	int dnssd_err = 0;
+	int retry_count = DNSSD_MDNSD_LAUNCH_RETRY_THRESHOLD;
+	uint32_t version = 0;
+	uint32_t size = sizeof(version);
+
+	while (retry_count >= 0) {
+		dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion, &version, &size);
+		if (!dnssd_err){
+			DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
+
+			res = __dnssd_ref_mdns_dbus();
+			if (res != DNSSD_ERROR_NONE)
+				DNSSD_LOGE("Fail to increase ref count for mdnsd");
+			else
+				break;
+		} else {
+			DNSSD_LOGE("Daemon is not running");
+		}
+
+		DNSSD_LOGD("Launching mdnsresponder. retry count: %d", retry_count);
+		res = __dnssd_launch_mdns_dbus();
+		if (res != DNSSD_ERROR_NONE)
+			DNSSD_LOGE("Fail to send dbus msg");
+		retry_count--;
+
+		/* wait a little before retrying the next trial */
+		usleep(DNSSD_MDNSD_LAUNCH_TRIAL_INTERVAL);
+	}
+	return res;
+}
+
 int dnssd_initialize(void)
 {
 	__DNSSD_LOG_FUNC_ENTER__;
+	int res = 0;
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
@@ -77,6 +245,14 @@ int dnssd_initialize(void)
 		DNSSD_LOGE("Already initialized");		//LCOV_EXCL_LINE
 		__DNSSD_LOG_FUNC_EXIT__;				//LCOV_EXCL_LINE
 		return DNSSD_ERROR_INVALID_OPERATION;	//LCOV_EXCL_LINE
+	}
+
+	res = __dnssd_launch_mdns();
+
+	if (res != DNSSD_ERROR_NONE) {
+		DNSSD_LOGE("Failed to launch mdnsresponder");
+		__DNSSD_LOG_FUNC_EXIT__;
+		return res;
 	}
 
 	g_is_init = true;
@@ -98,6 +274,9 @@ int dnssd_deinitialize(void)
 	}
 
 	g_is_init = false;
+
+	if (__dnssd_unref_mdns_dbus() != DNSSD_ERROR_NONE)
+		DNSSD_LOGE("Fail to decrease ref count for mdnsd");
 
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
