@@ -1098,7 +1098,12 @@ static dnssd_handle_s *__dnssd_get_found_handle(dnssd_service_h browse_service,
 
 	for (list = dnssd_handle_list; list; list = list->next) {
 		local_handle = (dnssd_handle_s *)list->data;
-		if (local_handle && local_handle->op_type != DNSSD_TYPE_FOUND)
+		if (!local_handle) {
+			DNSSD_LOGD("An invalid handle in dnssd_handle_list");
+			continue;
+		}
+
+		if (local_handle->op_type != DNSSD_TYPE_FOUND)
 			continue;
 
 		found_data = GET_FOUND_DATA_P(local_handle);
@@ -1480,20 +1485,24 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 
 	found = GET_FOUND_DATA_P(local_handle);
 
-	addr = found->ip_v4_addr;
-	*ip_v4_address = g_strdup_printf("%d.%d.%d.%d",
-			addr[0], addr[1], addr[2], addr[3]);
+	if (ip_v4_address) {
+		addr = found->ip_v4_addr;
+		*ip_v4_address = g_strdup_printf("%d.%d.%d.%d",
+				addr[0], addr[1], addr[2], addr[3]);
+	}
 
-	addr = found->ip_v6_addr;
-	*ip_v6_address = g_strdup_printf("%02X%02X:"
-			"%02X%02X:%02X%02X:%02X%02X:"
-			"%02X%02X:%02X%02X:%02X%02X:"
-			"%02X%02X", addr[0], addr[1],
-			addr[2], addr[3], addr[4],
-			addr[5], addr[6], addr[7],
-			addr[8], addr[9], addr[10],
-			addr[11], addr[12], addr[14],
-			addr[14], addr[15]);
+	if (ip_v6_address) {
+		addr = found->ip_v6_addr;
+		*ip_v6_address = g_strdup_printf("%02X%02X:"
+				"%02X%02X:%02X%02X:%02X%02X:"
+				"%02X%02X:%02X%02X:%02X%02X:"
+				"%02X%02X", addr[0], addr[1],
+				addr[2], addr[3], addr[4],
+				addr[5], addr[6], addr[7],
+				addr[8], addr[9], addr[10],
+				addr[11], addr[12], addr[14],
+				addr[14], addr[15]);
+	}
 
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
