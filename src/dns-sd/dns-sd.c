@@ -664,6 +664,9 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	dnssd_register_data_s *reg;
 	DNSServiceRef sd_ref;
 	DNSRecordRef record_client;
+	int dnssd_err = 0;
+	uint32_t version = 0;
+	uint32_t size = sizeof(version);
 
 	CHECK_FEATURE_SUPPORTED(NETWORK_SERVICE_DISCOVERY_FEATURE);
 
@@ -694,6 +697,13 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 		DNSSD_LOGE("Invalid DNS SD Client");
 		__DNSSD_LOG_FUNC_EXIT__;
 		return DNSSD_ERROR_INVALID_PARAMETER;
+	}
+
+	dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion, &version, &size);
+	if (!dnssd_err){
+		DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
+	} else {
+		DNSSD_LOGE("Daemon is not running");
 	}
 
 	ret = DNSServiceRemoveRecord(sd_ref, record_client,
