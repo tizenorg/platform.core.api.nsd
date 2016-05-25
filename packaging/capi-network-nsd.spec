@@ -1,6 +1,6 @@
 Name:       capi-network-nsd
 Summary:    A Network Service Discovery libraries in Native API
-Version:    0.0.3
+Version:    0.0.4
 Release:    1
 Group:      System/Network
 License:    Apache-2.0
@@ -60,12 +60,9 @@ cp -a %{SOURCE1003} .
 cp -a %{SOURCE1004} .
 
 %build
-%if 0%{?sec_build_binary_debug_enable}
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE -fprofile-arcs -ftest-coverage"
 export LDFLAGS = "-lgcov"
-%endif
-
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 %cmake . \
