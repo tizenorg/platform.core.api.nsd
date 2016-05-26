@@ -1189,7 +1189,7 @@ static void __dnssd_broswe_reply_cb(DNSServiceRef sd_ref, unsigned int flags,
 						dnssd_handle->service_handler,
 						service_name);
 
-				if (callback)
+				if (found_handle && callback)
 					callback(DNSSD_SERVICE_STATE_UNAVAILABLE,
 						found_handle->service_handler,
 						data);
