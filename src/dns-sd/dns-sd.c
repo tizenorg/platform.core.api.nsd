@@ -948,6 +948,13 @@ static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 		memcpy(&(found->ip_v6_addr), addr, IPV6_LEN);
 	}
 
+	if (flags & kDNSServiceFlagsMoreComing) {
+		DNSSD_LOGD("More results are queued, No need to send callback to "
+				"application at this stage");
+		__DNSSD_LOG_FUNC_EXIT__;
+		return;
+	}
+
 	if (callback) {
 		callback(DNSSD_SERVICE_STATE_AVAILABLE,
 				local_handle->service_handler, data);
