@@ -956,10 +956,14 @@ static void __dnssd_getaddrinfo_reply_cb(DNSServiceRef sd_ref,
 	}
 
 	if (callback) {
-		callback(DNSSD_SERVICE_STATE_AVAILABLE,
-				local_handle->service_handler, data);
-		DNSSD_LOGD("Finished executing Browse "
-				"Available Callback");
+		if (flags & kDNSServiceFlagsAdd)
+			callback(DNSSD_SERVICE_STATE_AVAILABLE,
+					local_handle->service_handler, data);
+		else
+			callback(DNSSD_SERVICE_STATE_UNAVAILABLE,
+					local_handle->service_handler, data);
+		DNSSD_LOGD("Finished executing Browse %s callback",
+				(flags & kDNSServiceFlagsAdd) ? "Available" : "Unavailable");
 	}
 
 }
