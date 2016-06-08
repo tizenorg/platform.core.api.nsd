@@ -106,6 +106,7 @@ typedef struct _dnssd_browse_data_s {
 
 typedef struct _dnssd_handle_s {
 	DNSServiceRef sd_ref;
+	int watch_id;
 	dnssd_type_e op_type;
 	unsigned int service_handler;
 	char *service_type;
@@ -118,6 +119,7 @@ typedef struct _dnssd_handle_s {
 typedef struct _resolve_reply_data {
 	dnssd_handle_s *dnssd_handle;
 	DNSServiceRef sd_ref;
+	int watch_id;
 } resolve_reply_data;
 
 #endif /* __TIZEN_NET_DNSSD_UTIL_H__ */

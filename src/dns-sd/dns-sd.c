@@ -235,6 +235,55 @@ static int __dnssd_launch_mdns()
 	return res;
 }
 
+static gboolean __dnssd_process_result(GIOChannel *source,
+		GIOCondition condition, gpointer data)
+{
+	DNSServiceRef *client = data;
+	DNSServiceErrorType err;
+
+	(void)source;        //Unused
+	if(*client == NULL)
+		return FALSE;
+
+	switch (condition) {
+		case G_IO_IN:
+			err = DNSServiceProcessResult(*client);
+			if (err) {
+				DNSSD_LOGE("DNSServiceProcessResult returned %d", err);
+				return FALSE;
+			}
+			return TRUE;
+		case G_IO_HUP:
+			DNSSD_LOGE("G_IO_HUP event received.");
+			break;
+		case G_IO_ERR:
+			DNSSD_LOGE("G_IO_ERR event received.");
+			break;
+		case G_IO_NVAL:
+			DNSSD_LOGE("G_IO_NVAL event received.");
+			break;
+		default:
+			DNSSD_LOGE("Unknown event received.");
+			break;
+	}
+	return FALSE;
+}
+
+void __dnssd_handle_events(int *watch_id, DNSServiceRef *sdRef)
+{
+	GIOChannel *sock_io = NULL;
+	int dns_sd_fd = DNSServiceRefSockFD(*sdRef);
+
+	sock_io = g_io_channel_unix_new(dns_sd_fd);
+	g_io_channel_set_flags(sock_io, G_IO_FLAG_NONBLOCK, NULL);
+	g_io_channel_set_close_on_unref(sock_io, TRUE);
+	*watch_id = g_io_add_watch(sock_io, (G_IO_IN | G_IO_HUP |
+				G_IO_ERR | G_IO_NVAL), __dnssd_process_result,
+			sdRef);
+	DNSSD_LOGD("watch_id %d", *watch_id);
+	g_io_channel_unref(sock_io);
+}
+
 int dnssd_initialize(void)
 {
 	__DNSSD_LOG_FUNC_ENTER__;
@@ -341,6 +390,7 @@ int dnssd_create_local_service(const char *service_type,
 	local_handle->service_type = g_strdup(service_type);
 	g_strlcpy(local_handle->domain, "", sizeof(local_handle->domain));
 	local_handle->flags = 0;
+	local_handle->watch_id = 0;
 	local_handle->if_index = kDNSServiceInterfaceIndexAny;
 
 	DNSSD_LOGD("New handle created [%p]->[%u] type %s", local_handle,
@@ -828,7 +878,7 @@ int dnssd_register_local_service(dnssd_service_h local_service,
 
 	reg->callback = register_cb;
 	reg->user_data = user_data;
-	DNSServiceHandleEvents(sd_ref);
+	__dnssd_handle_events(&(local_handle->watch_id), sd_ref);
 
 	DNSSD_LOGD("Succeeded to register for dns service");
 	__DNSSD_LOG_FUNC_EXIT__;
@@ -884,8 +934,12 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 			reg->record_ref = NULL;	//LCOV_EXCL_LINE
 	}
 
+	if(local_handle->watch_id > 0)
+		g_source_remove(local_handle->watch_id);
+
 	DNSServiceRefDeallocate(sd_ref);
 	sd_ref = NULL;
+
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
 }
@@ -1013,6 +1067,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 	g_strlcpy(local_handle->domain, domain, sizeof(local_handle->domain));
 	local_handle->if_index = if_index;
 	local_handle->flags = flags;
+	local_handle->watch_id = 0;
 	if (dnssd_handle->service_type)
 		local_handle->service_type = g_strdup(dnssd_handle->service_type);
 
@@ -1043,7 +1098,7 @@ static int __dnssd_getaddrinfo(dnssd_handle_s *dnssd_handle, unsigned int flags,
 		return ret;
 	}
 
-	DNSServiceHandleEvents(sd_ref);
+	__dnssd_handle_events(&(local_handle->watch_id), sd_ref);
 
 	DNSSD_LOGD("Succeeded to GetAddrInfo");
 
@@ -1085,6 +1140,7 @@ static int __dnssd_resolve_dns_service(dnssd_handle_s *dnssd_handle,
 	}
 
 	data->dnssd_handle =  dnssd_handle;
+	data->watch_id = 0;
 
 	resolve_handle_list = g_slist_prepend(resolve_handle_list, data);
 
@@ -1099,7 +1155,7 @@ static int __dnssd_resolve_dns_service(dnssd_handle_s *dnssd_handle,
 		return ret;
 	}
 
-	DNSServiceHandleEvents(sd_ref);
+	__dnssd_handle_events(&(data->watch_id), sd_ref);
 
 	DNSSD_LOGD("Succeeded to Resolve DNS Service");
 
@@ -1259,6 +1315,7 @@ int dnssd_start_browsing_service(const char *service_type,
 	local_handle->service_type = g_strdup(service_type);
 	g_strlcpy(local_handle->domain, "", sizeof(local_handle->domain));
 	local_handle->flags = 0;
+	local_handle->watch_id = 0;
 	local_handle->if_index = kDNSServiceInterfaceIndexAny;
 	browse = GET_BROWSE_DATA_P(local_handle);
 	sd_ref = &(local_handle->sd_ref);
@@ -1282,7 +1339,7 @@ int dnssd_start_browsing_service(const char *service_type,
 	browse->callback = found_cb;
 	browse->user_data = user_data;
 	dnssd_handle_list = g_slist_prepend(dnssd_handle_list, local_handle);
-	DNSServiceHandleEvents(sd_ref);
+	__dnssd_handle_events(&(local_handle->watch_id), sd_ref);
 
 	DNSSD_LOGD("Succeeded to browse for dns service");
 	__DNSSD_LOG_FUNC_EXIT__;
@@ -1310,6 +1367,9 @@ static void __dnssd_remove_found_service(gpointer data, gpointer user_data)
 	DNSSD_LOGD("handle [0x%x]", found_handle->service_handler);
 	dnssd_handle_list = g_slist_remove(dnssd_handle_list,
 			found_handle);
+
+	if(found_handle->watch_id > 0)
+		g_source_remove(found_handle->watch_id);
 
 	DNSServiceRefDeallocate(found_handle->sd_ref);
 
@@ -1373,12 +1433,17 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 			resolve_handle_list = g_slist_remove(resolve_handle_list,
 					resolve_data);
 
-			DNSServiceRefDeallocate(resolve_data->sd_ref);
+			if(resolve_data->watch_id > 0)
+				g_source_remove(resolve_data->watch_id);
 
+			DNSServiceRefDeallocate(resolve_data->sd_ref);
 			g_free(resolve_data);
 		}
 		//LCOV_EXCL_STOP
 	}
+
+	if(local_handle->watch_id > 0)
+		g_source_remove(local_handle->watch_id);
 
 	DNSServiceRefDeallocate(sd_ref);
 	sd_ref = NULL;
