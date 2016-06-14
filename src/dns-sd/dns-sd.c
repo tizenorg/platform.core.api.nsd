@@ -76,12 +76,12 @@ static int __dnssd_ref_mdns_dbus(void)
 
 	DNSSD_LOGD("Request to increase ref count for mdnsd");
 
-#if !GLIB_CHECK_VERSION(2,36,0)
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
 	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
 	if (netconfig_bus == NULL) {
-		if(g_error != NULL) {
+		if (g_error != NULL) {
 			DNSSD_LOGE("Couldn't connect to system bus "
 					"error [%d: %s]", g_error->code, g_error->message);
 			g_error_free(g_error);
@@ -101,7 +101,7 @@ static int __dnssd_ref_mdns_dbus(void)
 			NULL,
 			&g_error);
 
-	if(g_error != NULL) {
+	if (g_error != NULL) {
 		DNSSD_LOGE("g_dbus_connection_call failed. "
 				"error [%d: %s]", g_error->code, g_error->message);
 		g_error_free(g_error);
@@ -120,12 +120,12 @@ static int __dnssd_unref_mdns_dbus(void)
 	GError *g_error = NULL;
 
 	DNSSD_LOGD("Request to decrease ref count for mdnsd");
-#if !GLIB_CHECK_VERSION(2,36,0)
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
 	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
 	if (netconfig_bus == NULL) {
-		if(g_error != NULL) {
+		if (g_error != NULL) {
 			DNSSD_LOGE("Couldn't connect to system bus "
 					"error [%d: %s]", g_error->code, g_error->message);
 			g_error_free(g_error);
@@ -145,7 +145,7 @@ static int __dnssd_unref_mdns_dbus(void)
 			NULL,
 			&g_error);
 
-	if(g_error != NULL) {
+	if (g_error != NULL) {
 		DNSSD_LOGE("g_dbus_connection_call failed. "
 				"error [%d: %s]", g_error->code, g_error->message);
 		g_error_free(g_error);
@@ -163,12 +163,12 @@ static int __dnssd_launch_mdns_dbus(void)
 	GDBusConnection *netconfig_bus = NULL;
 	GError *g_error = NULL;
 
-#if !GLIB_CHECK_VERSION(2,36,0)
+#if !GLIB_CHECK_VERSION(2, 36, 0)
 	g_type_init();
 #endif
 	netconfig_bus = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &g_error);
 	if (netconfig_bus == NULL) {
-		if(g_error != NULL) {
+		if (g_error != NULL) {
 			DNSSD_LOGE("Couldn't connect to system bus "
 					"error [%d: %s]", g_error->code, g_error->message);
 			g_error_free(g_error);
@@ -188,7 +188,7 @@ static int __dnssd_launch_mdns_dbus(void)
 			NULL,
 			&g_error);
 
-	if(g_error != NULL) {
+	if (g_error != NULL) {
 		DNSSD_LOGE("g_dbus_connection_call_sync() failed. "
 				"error [%d: %s]", g_error->code, g_error->message);
 		g_error_free(g_error);
@@ -211,7 +211,7 @@ static int __dnssd_launch_mdns()
 
 	while (retry_count >= 0) {
 		dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion, &version, &size);
-		if (!dnssd_err){
+		if (!dnssd_err) {
 			DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
 
 			res = __dnssd_ref_mdns_dbus();
@@ -242,29 +242,29 @@ static gboolean __dnssd_process_result(GIOChannel *source,
 	DNSServiceErrorType err;
 
 	(void)source;        //Unused
-	if(*client == NULL)
+	if (*client == NULL)
 		return FALSE;
 
 	switch (condition) {
-		case G_IO_IN:
-			err = DNSServiceProcessResult(*client);
-			if (err) {
-				DNSSD_LOGE("DNSServiceProcessResult returned %d", err);
-				return FALSE;
-			}
-			return TRUE;
-		case G_IO_HUP:
-			DNSSD_LOGE("G_IO_HUP event received.");
-			break;
-		case G_IO_ERR:
-			DNSSD_LOGE("G_IO_ERR event received.");
-			break;
-		case G_IO_NVAL:
-			DNSSD_LOGE("G_IO_NVAL event received.");
-			break;
-		default:
-			DNSSD_LOGE("Unknown event received.");
-			break;
+	case G_IO_IN:
+		err = DNSServiceProcessResult(*client);
+		if (err) {
+			DNSSD_LOGE("DNSServiceProcessResult returned %d", err);
+			return FALSE;
+		}
+		return TRUE;
+	case G_IO_HUP:
+		DNSSD_LOGE("G_IO_HUP event received.");
+		break;
+	case G_IO_ERR:
+		DNSSD_LOGE("G_IO_ERR event received.");
+		break;
+	case G_IO_NVAL:
+		DNSSD_LOGE("G_IO_NVAL event received.");
+		break;
+	default:
+		DNSSD_LOGE("Unknown event received.");
+		break;
 	}
 	return FALSE;
 }
@@ -750,11 +750,10 @@ int dnssd_service_unset_record(dnssd_service_h local_service,
 	}
 
 	dnssd_err = DNSServiceGetProperty(kDNSServiceProperty_DaemonVersion, &version, &size);
-	if (!dnssd_err){
+	if (!dnssd_err)
 		DNSSD_LOGD("Daemon is running ver. %d.%d", version / 10000, version / 100 % 100);
-	} else {
+	else
 		DNSSD_LOGE("Daemon is not running");
-	}
 
 	ret = DNSServiceRemoveRecord(sd_ref, record_client,
 			local_handle->flags);
@@ -934,7 +933,7 @@ int dnssd_deregister_local_service(dnssd_service_h local_service)
 			reg->record_ref = NULL;	//LCOV_EXCL_LINE
 	}
 
-	if(local_handle->watch_id > 0)
+	if (local_handle->watch_id > 0)
 		g_source_remove(local_handle->watch_id);
 
 	DNSServiceRefDeallocate(sd_ref);
@@ -1368,7 +1367,7 @@ static void __dnssd_remove_found_service(gpointer data, gpointer user_data)
 	dnssd_handle_list = g_slist_remove(dnssd_handle_list,
 			found_handle);
 
-	if(found_handle->watch_id > 0)
+	if (found_handle->watch_id > 0)
 		g_source_remove(found_handle->watch_id);
 
 	DNSServiceRefDeallocate(found_handle->sd_ref);
@@ -1433,7 +1432,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 			resolve_handle_list = g_slist_remove(resolve_handle_list,
 					resolve_data);
 
-			if(resolve_data->watch_id > 0)
+			if (resolve_data->watch_id > 0)
 				g_source_remove(resolve_data->watch_id);
 
 			DNSServiceRefDeallocate(resolve_data->sd_ref);
@@ -1442,7 +1441,7 @@ int dnssd_stop_browsing_service(dnssd_browser_h dnssd_service)
 		//LCOV_EXCL_STOP
 	}
 
-	if(local_handle->watch_id > 0)
+	if (local_handle->watch_id > 0)
 		g_source_remove(local_handle->watch_id);
 
 	DNSServiceRefDeallocate(sd_ref);
