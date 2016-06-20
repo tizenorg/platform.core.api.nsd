@@ -92,6 +92,7 @@ typedef struct _dnssd_found_data_s {
 typedef struct _dnssd_register_data_s {
 	DNSRecordRef record_ref;
 	TXTRecordRef txt_ref;
+	int is_txt_ref;
 	char *service_name;
 	char *host;
 	int port;

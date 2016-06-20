@@ -87,27 +87,32 @@ static const char *dnssd_error_to_string(dnssd_error_e error)
 	}
 }
 
-static void show_txt_record(unsigned short txt_len, const char *txt_record)
+static void show_txt_record(unsigned short txt_len, const unsigned char *txt_record)
 {
-	const char *ptr = txt_record;
-	const char *max = txt_record + txt_len;
+	const unsigned char *ptr = txt_record;
+	const unsigned char *max = txt_record + txt_len;
 	while (ptr < max) {
-		const char *const end = ptr + 1 + ptr[0];
+		const unsigned char *const end = ptr + 1 + ptr[0];
 		if (end > max) {
 			printf("<< invalid data >>");
 			break;
 		}
 		if (++ptr < end)
-			printf(" ");
-		while (ptr < end) {
-			if (*ptr >= ' ')
-				   printf("%c", *ptr);
+			printf(" ");   // As long as string is non-empty, begin with a space
+		while (ptr<end) {
+			if (strchr(" &;`'\"|*?~<>^()[]{}$", *ptr))
+				printf("\\");
+			if (*ptr == '\\')
+				printf("\\\\\\\\");
+			else if (*ptr >= ' ' )
+				printf("%c", *ptr);
+			else
+				printf("\\\\x%02X", *ptr);
 			ptr++;
 		}
 	}
 	printf("\n");
 }
-
 
 int test_dnssd_initialize()
 {
@@ -380,12 +385,6 @@ int test_dnssd_service_set_record()
 		return 0;
 	}
 
-	rv = dnssd_service_remove_txt_record(service, key);
-	if (rv != DNSSD_ERROR_NONE) {
-		printf("Failed to unset txt record value\n");
-		return 0;
-	}
-
 	printf("Successfully added record\n");
 
 	return 1;
@@ -455,7 +454,7 @@ static void dnssd_browse_reply(dnssd_service_state_e service_state,
 	if (service_state == DNSSD_SERVICE_STATE_AVAILABLE) {
 		char *ip_v4_address = NULL;
 		char *ip_v6_address = NULL;
-		char *txt_record = NULL;
+		unsigned char *txt_record = NULL;
 		unsigned short txt_len = 0;
 		int port = 0;
 

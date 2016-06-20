@@ -569,7 +569,11 @@ int dnssd_service_add_txt_record(dnssd_service_h local_service,
 	reg = GET_REG_DATA_P(local_handle);
 	txt_record = &(reg->txt_ref);
 
-	TXTRecordCreate(txt_record, 0, NULL);
+	if (reg->is_txt_ref == 0) {
+		DNSSD_LOGD("Creating TXT Record");
+		TXTRecordCreate(txt_record, 0, NULL);
+		reg->is_txt_ref = 1;
+	}
 
 	ret = TXTRecordSetValue(txt_record, key, length, value);
 	if (ret != DNSSD_ERROR_NONE) {
@@ -641,6 +645,7 @@ int dnssd_service_remove_txt_record(dnssd_service_h local_service,
 		DNSSD_LOGD("No more key exists in TXT Record");
 		/* Free TXT Record */
 		TXTRecordDeallocate(txt_record);
+		reg->is_txt_ref = 0;
 	}
 
 	__DNSSD_LOG_FUNC_EXIT__;
@@ -692,6 +697,7 @@ int dnssd_service_set_record(dnssd_service_h local_service, unsigned short type,
 		ret = DNSServiceUpdateRecord(sd_ref, record_client,	//LCOV_EXCL_LINE
 				local_handle->flags, length, data, 0);		//LCOV_EXCL_LINE
 	}
+
 	if (ret < 0) {
 		DNSSD_LOGE("Failed to Add Record for DNS Service, error[%s]",	//LCOV_EXCL_LINE
 				dnssd_error_to_string(ret));							//LCOV_EXCL_LINE
