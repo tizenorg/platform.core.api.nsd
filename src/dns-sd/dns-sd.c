@@ -69,6 +69,7 @@ static bool __dnssd_is_init(void)
 	return g_is_init;
 }
 
+//LCOV_EXCL_START
 static int __dnssd_ref_mdns_dbus(void)
 {
 	GDBusConnection *netconfig_bus = NULL;
@@ -113,7 +114,9 @@ static int __dnssd_ref_mdns_dbus(void)
 	return DNSSD_ERROR_NONE;
 
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static int __dnssd_unref_mdns_dbus(void)
 {
 	GDBusConnection *netconfig_bus = NULL;
@@ -157,7 +160,9 @@ static int __dnssd_unref_mdns_dbus(void)
 	return DNSSD_ERROR_NONE;
 
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static int __dnssd_launch_mdns_dbus(void)
 {
 	GDBusConnection *netconfig_bus = NULL;
@@ -200,7 +205,9 @@ static int __dnssd_launch_mdns_dbus(void)
 	DNSSD_LOGD("Successfully launched mdnsresponder");
 	return DNSSD_ERROR_NONE;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static int __dnssd_launch_mdns()
 {
 	int res = DNSSD_ERROR_NONE;
@@ -234,7 +241,9 @@ static int __dnssd_launch_mdns()
 	}
 	return res;
 }
+//LCOV_EXCL_STOP
 
+//LCOV_EXCL_START
 static gboolean __dnssd_process_result(GIOChannel *source,
 		GIOCondition condition, gpointer data)
 {
@@ -268,6 +277,7 @@ static gboolean __dnssd_process_result(GIOChannel *source,
 	}
 	return FALSE;
 }
+//LCOV_EXCL_STOP
 
 void __dnssd_handle_events(int *watch_id, DNSServiceRef *sdRef)
 {
@@ -1567,6 +1577,7 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 		return DNSSD_ERROR_SERVICE_NOT_FOUND;
 	}
 
+//LCOV_EXCL_START
 	if (local_handle->op_type != DNSSD_TYPE_FOUND) {
 		DNSSD_LOGD("Invalid DNS SD Service");
 		__DNSSD_LOG_FUNC_EXIT__;
@@ -1596,6 +1607,7 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
+//LCOV_EXCL_STOP
 }
 
 int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
