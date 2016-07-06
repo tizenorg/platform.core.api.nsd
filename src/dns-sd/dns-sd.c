@@ -1538,7 +1538,6 @@ int dnssd_service_get_name(dnssd_service_h dnssd_service, char **service_name)
 	return DNSSD_ERROR_NONE;
 }
 
-//LCOV_EXCL_START
 int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 		char **ip_v6_address)
 {
@@ -1598,7 +1597,6 @@ int dnssd_service_get_ip(dnssd_service_h dnssd_service, char **ip_v4_address,
 	__DNSSD_LOG_FUNC_EXIT__;
 	return DNSSD_ERROR_NONE;
 }
-//LCOV_EXCL_STOP
 
 int dnssd_service_get_port(dnssd_service_h dnssd_service, int *port)
 {

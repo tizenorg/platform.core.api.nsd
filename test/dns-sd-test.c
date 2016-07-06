@@ -98,13 +98,13 @@ static void show_txt_record(unsigned short txt_len, const unsigned char *txt_rec
 			break;
 		}
 		if (++ptr < end)
-			printf(" ");   // As long as string is non-empty, begin with a space
-		while (ptr<end) {
+			printf(" ");   /* As long as string is non-empty, begin with a space */
+		while (ptr < end) {
 			if (strchr(" &;`'\"|*?~<>^()[]{}$", *ptr))
 				printf("\\");
 			if (*ptr == '\\')
 				printf("\\\\\\\\");
-			else if (*ptr >= ' ' )
+			else if (*ptr >= ' ')
 				printf("%c", *ptr);
 			else
 				printf("\\\\x%02X", *ptr);
